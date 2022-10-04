@@ -12,7 +12,8 @@ return [
     */
     'locales' => [
         'en' => 'English',
-        'fr' => 'Français'
+        'fr' => 'Français',
+        'id' => 'Indonesia',
     ],
 
     /*
