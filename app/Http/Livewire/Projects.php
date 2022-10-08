@@ -125,6 +125,7 @@ class Projects extends Component implements HasTable
     {
         return [
             Action::make('edit')
+                ->visible(auth()->user()->can('Create projects'))
                 ->icon('heroicon-o-pencil')
                 ->link()
                 ->label(__('Edit project'))
