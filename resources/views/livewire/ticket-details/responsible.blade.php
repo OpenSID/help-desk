@@ -44,7 +44,7 @@
                             )
                         )
                     )
-                    && auth()->user()->can('assign-tickets')
+                    && auth()->user()->can('Assign tickets')
                 )
                 <button type="button" wire:click="update"
                         class="bg-gray-100 shadow hover:bg-gray-200 hover:shadow-lg w-6 h-6 text-xs flex-row
