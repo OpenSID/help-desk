@@ -3,16 +3,13 @@ const colors = require('tailwindcss/colors')
 
 module.exports = {
     content: [
-        "./resources/**/*.blade.php",
-        "./resources/**/*.js",
-        "./resources/**/*.vue",
-        "./node_modules/flowbite/**/*.js",
-        "./vendor/filament/**/*.blade.php",
-        "./config/system.php",
-        "./app/Http/Livewire/**/*.php",
-        "./app/View/**/*.php",
-        "./app/Models/**/*.php",
+        './resources/**/*.blade.php',
+        './app/Filament/**/*.php',
+        './app/Http/Livewire/**/*.php',
+        './vendor/filament/**/*.blade.php',
+        './node_modules/flowbite/**/*.js'
     ],
+    darkMode: 'class',
     theme: {
         extend: {
             colors: {
@@ -26,6 +23,6 @@ module.exports = {
     plugins: [
         require('@tailwindcss/forms'),
         require('@tailwindcss/typography'),
-        require('flowbite/plugin'),
+        require('flowbite/plugin')
     ],
 }

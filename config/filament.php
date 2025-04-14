@@ -12,6 +12,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Http\Middleware\LocaleMiddleware;
 
 return [
 
@@ -25,7 +26,7 @@ return [
     |
     */
 
-    'path' => null,
+    'path' => env('FILAMENT_PATH', ''),
 
     /*
     |--------------------------------------------------------------------------
@@ -87,7 +88,8 @@ return [
     'auth' => [
         'guard' => env('FILAMENT_AUTH_GUARD', 'web'),
         'pages' => [
-            'login' => \Filament\Http\Livewire\Auth\Login::class,
+            'login' =>
+                \JeffGreco13\FilamentBreezy\Http\Livewire\Auth\Login::class,
         ],
     ],
 
@@ -139,8 +141,8 @@ return [
         'namespace' => 'App\\Filament\\Widgets',
         'path' => app_path('Filament/Widgets'),
         'register' => [
-            Widgets\AccountWidget::class,
-            Widgets\FilamentInfoWidget::class,
+            // Widgets\AccountWidget::class,
+            // Widgets\FilamentInfoWidget::class,
         ],
     ],
 
@@ -182,7 +184,7 @@ return [
     */
 
     'database_notifications' => [
-        'enabled' => false,
+        'enabled' => true,
         'polling_interval' => '30s',
     ],
 
@@ -200,12 +202,12 @@ return [
 
     'broadcasting' => [
 
-        // 'echo' => [
-        //     'broadcaster' => 'pusher',
-        //     'key' => env('VITE_PUSHER_APP_KEY'),
-        //     'cluster' => env('VITE_PUSHER_APP_CLUSTER'),
-        //     'forceTLS' => true,
-        // ],
+         'echo' => [
+             'broadcaster' => 'pusher',
+             'key' => env('VITE_PUSHER_APP_KEY'),
+             'cluster' => env('VITE_PUSHER_APP_CLUSTER'),
+             'forceTLS' => true,
+         ],
 
     ],
 
@@ -236,19 +238,20 @@ return [
             'have_inline_labels' => false,
         ],
         'footer' => [
-            'should_show_logo' => true,
+            'should_show_logo' => false,
         ],
-        'max_content_width' => null,
+        'max_content_width' => 'full',
         'notifications' => [
-            'vertical_alignment' => 'top',
+            'vertical_alignment' => 'bottom',
             'alignment' => 'right',
         ],
         'sidebar' => [
-            'is_collapsible_on_desktop' => false,
+            'is_collapsible_on_desktop' => true,
             'groups' => [
                 'are_collapsible' => true,
             ],
             'width' => null,
+            'collapsed_width' => null,
         ],
     ],
 
@@ -273,7 +276,7 @@ return [
     |
     */
 
-    'default_avatar_provider' => \Filament\AvatarProviders\UiAvatarsProvider::class,
+    'default_avatar_provider' => \Devaslanphp\FilamentAvatar\Core\FilamentUserAvatarProvider::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -307,7 +310,7 @@ return [
     | Middleware
     |--------------------------------------------------------------------------
     |
-    | You may customise the middleware stack that Filament uses to handle
+    | You may customize the middleware stack that Filament uses to handle
     | requests.
     |
     */
@@ -315,6 +318,7 @@ return [
     'middleware' => [
         'auth' => [
             Authenticate::class,
+            'verified'
         ],
         'base' => [
             EncryptCookies::class,
@@ -326,6 +330,7 @@ return [
             SubstituteBindings::class,
             DispatchServingFilamentEvent::class,
             MirrorConfigToSubpackages::class,
+            LocaleMiddleware::class
         ],
     ],
 

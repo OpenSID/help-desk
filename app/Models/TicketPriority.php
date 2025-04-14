@@ -2,31 +2,21 @@
 
 namespace App\Models;
 
-use App\Core\HasLogsActivity;
-use App\Core\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class TicketPriority extends Model implements HasLogsActivity
+class TicketPriority extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'title',
-        'text_color',
-        'bg_color',
-        'icon',
-        'slug'
+        'name', 'color', 'is_default'
     ];
 
-    public function __toString(): string
+    public function tickets(): HasMany
     {
-        return $this->title;
-    }
-
-    public function activityLogLink(): string
-    {
-        return route('administration.ticket-priorities');
+        return $this->hasMany(Ticket::class, 'priority_id', 'id')->withTrashed();
     }
 }

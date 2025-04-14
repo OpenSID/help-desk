@@ -51,13 +51,9 @@ return [
     */
 
     'channels' => [
-        'larabug' => [
-            'driver' => 'larabug',
-        ],
-
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single', 'larabug'],
+            'channels' => ['single'],
             'ignore_exceptions' => false,
         ],
 

@@ -2,31 +2,59 @@
 
 namespace App\Models;
 
-use App\Core\HasLogsActivity;
-use App\Core\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class TicketStatus extends Model implements HasLogsActivity
+class TicketStatus extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'title',
-        'text_color',
-        'bg_color',
-        'default',
-        'slug'
+        'name', 'color', 'is_default', 'order',
+        'project_id'
     ];
 
-    public function __toString(): string
+    public static function boot()
     {
-        return $this->title;
+        parent::boot();
+
+        static::saved(function (TicketStatus $item) {
+            if ($item->is_default) {
+                $query = TicketStatus::where('id', '<>', $item->id)
+                    ->where('is_default', true);
+                if ($item->project_id) {
+                    $query->where('project_id', $item->project->id);
+                }
+                $query->update(['is_default' => false]);
+            }
+
+            $query = TicketStatus::where('order', '>=', $item->order)->where('id', '<>', $item->id);
+            if ($item->project_id) {
+                $query->where('project_id', $item->project->id);
+            }
+            $toUpdate = $query->orderBy('order', 'asc')
+                ->get();
+            $order = $item->order;
+            foreach ($toUpdate as $i) {
+                if ($i->order == $order || $i->order == ($order + 1)) {
+                    $i->order = $i->order + 1;
+                    $i->save();
+                    $order = $i->order;
+                }
+            }
+        });
     }
 
-    public function activityLogLink(): string
+    public function tickets(): HasMany
     {
-        return route('administration.ticket-statuses');
+        return $this->hasMany(Ticket::class, 'status_id', 'id')->withTrashed();
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id', 'id');
     }
 }

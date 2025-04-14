@@ -2,52 +2,36 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+use App\Settings\GeneralSettings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Str;
 
 class PermissionsSeeder extends Seeder
 {
-    const permissions = [
-        'View all projects',
-        'Update all projects',
-        'Delete all projects',
-        'Create projects',
-        'View own projects',
-        'Update own projects',
-        'Delete own projects',
-        'View all tickets',
-        'Update all tickets',
-        'Delete all tickets',
-        'Create tickets',
-        'View own tickets',
-        'Update own tickets',
-        'Delete own tickets',
-        'Assign tickets',
-        'Change status tickets',
-        'Can view Analytics page',
-        'Can view Tickets page',
-        'Can view Kanban page',
-        'View all users',
-        'View company users',
-        'Create users',
-        'Update users',
-        'Delete users',
-        'Assign permissions',
-        'View all companies',
-        'View own companies',
-        'Create companies',
-        'Update companies',
-        'Delete companies',
-        'Manage ticket statuses',
-        'Manage ticket priorities',
-        'Manage ticket types',
-        'View activity log',
-        'Manage user roles',
-        'Create user roles',
-        'Update user roles',
-        'Delete user roles',
+    private array $modules = [
+        'permission', 'project', 'project status', 'role', 'ticket',
+        'ticket priority', 'ticket status', 'ticket type', 'user',
+        'activity', 'sprint'
     ];
+
+    private array $pluralActions = [
+        'List'
+    ];
+
+    private array $singularActions = [
+        'View', 'Create', 'Update', 'Delete'
+    ];
+
+    private array $extraPermissions = [
+        'Manage general settings', 'Import from Jira',
+        'List timesheet data', 'View timesheet dashboard'
+    ];
+
+    private string $defaultRole = 'Default role';
 
     /**
      * Run the database seeds.
@@ -56,10 +40,42 @@ class PermissionsSeeder extends Seeder
      */
     public function run()
     {
-        foreach (self::permissions as $permission) {
-            if (!Permission::where('name', $permission)->count()) {
-                Permission::create(['name' => $permission]);
+        // Create profiles
+        foreach ($this->modules as $module) {
+            $plural = Str::plural($module);
+            $singular = $module;
+            foreach ($this->pluralActions as $action) {
+                Permission::firstOrCreate([
+                    'name' => $action . ' ' . $plural
+                ]);
             }
+            foreach ($this->singularActions as $action) {
+                Permission::firstOrCreate([
+                    'name' => $action . ' ' . $singular
+                ]);
+            }
+        }
+
+        foreach ($this->extraPermissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission
+            ]);
+        }
+
+        // Create default role
+        $role = Role::firstOrCreate([
+            'name' => $this->defaultRole
+        ]);
+        $settings = app(GeneralSettings::class);
+        $settings->default_role = $role->id;
+        $settings->save();
+
+        // Add all permissions to default role
+        $role->syncPermissions(Permission::all()->pluck('name')->toArray());
+
+        // Assign default role to first database user
+        if ($user = User::first()) {
+            $user->syncRoles([$this->defaultRole]);
         }
     }
 }

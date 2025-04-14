@@ -2,170 +2,150 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Locales configuration
-    |--------------------------------------------------------------------------
-    |
-    | This value is the configured locales that the application can use
-    |
-    */
-    'locales' => [
-        'en' => 'English',
-        'fr' => 'Français',
-        'id' => 'Indonesia',
+    // Login form
+    'login_form' => [
+
+        // Enabled
+        'is_enabled' => true
+
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Main menu configuration
-    |--------------------------------------------------------------------------
-    |
-    | This value is the definition of the application main menu
-    | Used in the 'App\View\Components\MainMenu' blade component
-    |
-    | Parameters:
-    | -----------
-    |   - 'title' The translatable title of the menu
-    |
-    |   - 'route' The menu route name
-    |
-    |   - 'icon' The Fontawesome icon class
-    |           (icons list: http://fontawesome.io/icons/)
-    |
-    |   - 'always_shown' If equals to "true" the menu is always shown without
-    |           checking permissions, if "false" the 'permissions' parameter
-    |           is used to show or not the menu item
-    |
-    |   - 'show_notification_indicator' If equals to "true" the menu item will
-    |           show an indicator if there is notifications not read
-    |
-    |   - 'permissions' The permissions used to show or not the menu item
-    |
-    |   - (Optional) 'children' The sub menu items
-    |       - 'children.title' The translatable title of the sub menu
-    |
-    |       - 'children.route' The sub menu route name
-    |
-    |       - 'children.icon' The Fontawesome icon class
-    |           (icons list: http://fontawesome.io/icons/)
-    |
-    |       - 'children.always_shown' If equals to "true" the menu is always
-    |           shown without checking permissions, if "false"
-    |           the 'permissions' parameter is used to show or not
-    |           the menu item
-    |
-    |       - 'children.permissions' The permissions used to show or not
-    |           the menu item
-    |
-    */
-    'main_menu' => [
-        [
-            'title' => 'Overview',
-            'route' => 'home',
-            'icon' => 'fa-table-columns',
-            'always_shown' => true,
-            'show_notification_indicator' => false,
-            'permissions' => ['']
+    // Locales
+    'locales' => [
+
+        // Locales list
+        'list' => [
+            'en' => 'English',
+            'fr' => 'French',
+            'ar' => 'Arabic',
+            'az' => 'Azerbaijani',
+            'be' => 'Belarusian',
+            'bg' => 'Bulgarian',
+            'bn' => 'Bengali',
+            'bs' => 'Bosnian',
+            'ca' => 'Catalan',
+            'cs' => 'Czech',
+            'cy' => 'Welsh',
+            'da' => 'Danish',
+            'de' => 'German',
+            'el' => 'Greek',
+            'es' => 'Spanish',
+            'et' => 'Estonian',
+            'eu' => 'Basque',
+            'fa' => 'Persian',
+            'fi' => 'Finnish',
+            'fil' => 'Filipino',
+            'gl' => 'Galician',
+            'he' => 'Hebrew',
+            'hi' => 'Hindi',
+            'hr' => 'Croatian',
+            'hu' => 'Hungarian',
+            'hy' => 'Armenian',
+            'id' => 'Indonesian',
+            'is' => 'Icelandic',
+            'it' => 'Italian',
+            'ja' => 'Japanese',
+            'ka' => 'Georgian',
+            'kk' => 'Kazakh',
+            'km' => 'Central Khmer',
+            'kn' => 'Kannada',
+            'ko' => 'Korean',
+            'lt' => 'Lithuanian',
+            'lv' => 'Latvian',
+            'mk' => 'Macedonian	',
+            'mn' => 'Mongolian',
+            'mr' => 'Marathi',
+            'ms' => 'Malay',
+            'nb' => 'Norwegian Bokmål',
+            'ne' => 'Nepali',
+            'nl' => 'Dutch',
+            'pl' => 'Polish',
+            'ps' => 'Pashto',
+            'pt' => 'Portuguese',
+            'ro' => 'Romanian',
+            'ru' => 'Russian',
+            'si' => 'Sinhala',
+            'sk' => 'Slovak',
+            'sl' => 'Slovenian',
+            'sq' => 'Albanian',
+            'sv' => 'Swedish',
+            'sw' => 'Swahili',
+            'tg' => 'Tajik',
+            'th' => 'Thai',
+            'tk' => 'Turkmen',
+            'tl' => 'Tagalog',
+            'tr' => 'Turkish',
+            'ug' => 'Uighur',
+            'uk' => 'Ukrainian',
+            'ur' => 'Urdu',
+            'vi' => 'Vietnamese',
         ],
-        [
-            'title' => 'Analytics',
-            'route' => 'analytics',
-            'icon' => 'fa-chart-bar',
-            'always_shown' => false,
-            'show_notification_indicator' => false,
-            'permissions' => ['Can view Analytics page']
-        ],
-        [
-            'title' => 'Tickets',
-            'route' => 'tickets',
-            'icon' => 'fa-ticket',
-            'always_shown' => false,
-            'show_notification_indicator' => false,
-            'permissions' => ['Can view Tickets page']
-        ],
-        [
-            'title' => 'Kanban Board',
-            'route' => 'kanban',
-            'icon' => 'fa-clipboard-check',
-            'always_shown' => false,
-            'show_notification_indicator' => false,
-            'permissions' => ['Can view Kanban page']
-        ],
-        [
-            'title' => 'Administration',
-            'route' => 'administration',
-            'icon' => 'fa-cogs',
-            'always_shown' => false,
-            'show_notification_indicator' => false,
-            'permissions' => [
-                'View all users', 'View company users',
-                'View all companies', 'View own companies',
-                'Manage ticket statuses',
-                'Manage ticket types',
-                'Manage ticket priorities',
-                'View activity log'
-            ],
-            'children' => [
-                [
-                    'title' => 'Manage companies',
-                    'route' => 'administration.companies',
-                    'icon' => 'fa-building',
-                    'always_shown' => false,
-                    'permissions' => ['View all companies', 'View own companies']
-                ],
-                [
-                    'title' => 'Manage users',
-                    'route' => 'administration.users',
-                    'icon' => 'fa-users',
-                    'always_shown' => false,
-                    'permissions' => ['View all users', 'View company users']
-                ],
-                [
-                    'title' => 'Manage user roles',
-                    'route' => 'administration.roles',
-                    'icon' => 'fa-user-lock',
-                    'always_shown' => false,
-                    'permissions' => ['Manage user roles']
-                ],
-                [
-                    'title' => 'Manage statuses',
-                    'route' => 'administration.ticket-statuses',
-                    'icon' => 'fa-square-check',
-                    'always_shown' => false,
-                    'permissions' => ['Manage ticket statuses']
-                ],
-                [
-                    'title' => 'Manage types',
-                    'route' => 'administration.ticket-types',
-                    'icon' => 'fa-copy',
-                    'always_shown' => false,
-                    'permissions' => ['Manage ticket types']
-                ],
-                [
-                    'title' => 'Manage priorities',
-                    'route' => 'administration.ticket-priorities',
-                    'icon' => 'fa-arrow-up',
-                    'always_shown' => false,
-                    'permissions' => ['Manage ticket priorities']
-                ],
-                [
-                    'title' => 'Activity logs',
-                    'route' => 'administration.activity-logs',
-                    'icon' => 'fa-bell',
-                    'always_shown' => false,
-                    'permissions' => ['View activity log']
-                ]
-            ]
-        ],
-        [
-            'title' => 'Notifications',
-            'route' => 'notifications',
-            'icon' => 'fa-bell',
-            'always_shown' => true,
-            'show_notification_indicator' => true,
-            'permissions' => ['']
-        ],
+
     ],
+
+    // Projects configuration
+    'projects' => [
+
+        // Users affectations
+        'affectations' => [
+
+            // Users affectations roles
+            'roles' => [
+
+                // Default role
+                'default' => 'employee',
+
+                // Role that can manage
+                'can_manage' => 'administrator',
+
+                // Roles list
+                'list' => [
+                    'employee' => 'Employee',
+                    'customer' => 'Customer',
+                    'administrator' => 'Administrator'
+                ],
+
+                // Roles colors
+                'colors' => [
+                    'primary' => 'employee',
+                    'warning' => 'customer',
+                    'danger' => 'administrator'
+                ],
+
+            ],
+
+        ],
+
+    ],
+
+    // Tickets configuration
+    'tickets' => [
+
+        // Ticket relations types
+        'relations' => [
+
+            // Default type
+            'default' => 'related_to',
+
+            // Types list
+            'list' => [
+                'related_to' => 'Related to',
+                'blocked_by' => 'Blocked by',
+                'duplicate_of' => 'Duplicate of'
+            ],
+
+            // Types colors
+            'colors' => [
+                'related_to' => 'primary',
+                'blocked_by' => 'warning',
+                'duplicate_of' => 'danger',
+            ],
+
+        ],
+
+    ],
+
+    // System constants
+    'max_file_size' => 10240,
 
 ];

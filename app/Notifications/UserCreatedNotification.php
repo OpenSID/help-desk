@@ -12,7 +12,7 @@ class UserCreatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private User $user;
+    public User $user;
 
     /**
      * Create a new notification instance.
@@ -27,7 +27,7 @@ class UserCreatedNotification extends Notification implements ShouldQueue
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      * @return array
      */
     public function via($notifiable)
@@ -38,33 +38,22 @@ class UserCreatedNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line(
-                        __(
-                            'We are pleased to inform you that your user account on the :platform platform has been successfully created.',
-                            [
-                                'platform' => config('app.name')
-                            ]
-                        )
-                    )
-                    ->line(
-                        __(
-                            'We invite you to use the following button to define your password and activate your user account.'
-                        )
-                    )
-                    ->action(__('Activate my account'), route('auth.activate-account', $this->user->register_token))
-                    ->line(__('Thank you for using our application!'));
+            ->subject(__('Validate your account'))
+            ->line(__('Welcome to :app platform.', ['app' => config('app.name')]))
+            ->line(__('To complete the creation of your account, please use the below button to choose a password and verify your user account.'))
+            ->action(__('Verify my account'), route('validate-account', $this->user->creation_token));
     }
 
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
+     * @param mixed $notifiable
      * @return array
      */
     public function toArray($notifiable)

@@ -1,4 +1,4 @@
-# Help Desk
+# Project Management
 
 <p align="center">
     <a href="https://laravel.com"><img alt="Laravel v9.x" src="https://img.shields.io/badge/Laravel-v9.x-FF2D20?style=for-the-badge&logo=laravel"></a>
@@ -6,47 +6,43 @@
     <a href="https://filamentphp.com/"><img alt="Filament v2.x" src="https://img.shields.io/badge/Filament-v2.x-e9b228?style=for-the-badge"></a>
     <a href="https://php.net"><img alt="PHP 8.0" src="https://img.shields.io/badge/PHP-8.0-777BB4?style=for-the-badge&logo=php"></a>
     <br/>
-    <a href="https://github.com/devaslanphp/help-desk/releases/">
-        <img src="https://img.shields.io/github/tag/devaslanphp/help-desk?include_prereleases=&sort=semver&color=blue&style=for-the-badge" alt="GitHub tag">
+    <a href="https://github.com/devaslanphp/project-management/releases/">
+        <img src="https://img.shields.io/github/tag/devaslanphp/project-management?include_prereleases=&sort=semver&color=blue&style=for-the-badge" alt="GitHub tag">
     </a>
     <a href="#license">
         <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
     </a>
-    <a href="https://github.com/devaslanphp/help-desk/issues">
-        <img src="https://img.shields.io/github/issues/devaslanphp/help-desk?style=for-the-badge" alt="issues - help-desk">
+    <a href="https://github.com/devaslanphp/project-management/issues">
+        <img src="https://img.shields.io/github/issues/devaslanphp/project-management?style=for-the-badge" alt="issues - project-management">
     </a>
     <br/>
-    <a href="https://devaslanphp.github.io/help-desk/" title="Go to project documentation">
+    <a href="https://devaslanphp.github.io/project-management" title="Go to project documentation">
         <img src="https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge" alt="view - Documentation">
+    </a>
+    <br/>
+    <a href="https://hub.docker.com/r/eloufirhatim/helper/tags" title="Docker image">
+        <img src="https://img.shields.io/docker/v/eloufirhatim/helper?label=Docker&logo=docker&style=for-the-badge" alt="Docker image">
     </a>
 </p>
 
-Help Desk is a Laravel based project, that let you manage your support tickets and communicate with your customers, with
-a beautiful and simple to use platform.
+# Introduction
 
-Help Desk is based on the latest version of Laravel and any other Open Source packages and technologies.
+![logo](readme-logo.png)
 
-<hr/>
+Helper, is a great tool if you want to manage your projects, tickets and be here for your clients
 
-[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
+It comes also with more than 60 languages ready to use.
 
-Below are the analyzes reported by SonarCloud. 
+All this made with the best technologies.
 
-> This project has just started so don't be afraid if there are big numbers :satisfied:
+## Prerequisites
 
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=bugs)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=devaslanphp_help-desk&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=devaslanphp_help-desk)
-
-<hr/>
+- PHP 8+
+- MySQL 8+
+- [Pusher](https://pusher.com/) account
 
 ## Screenshots
+
 <div>
     <img src="github-contents/1.png" width="20%"></img> 
     <img src="github-contents/2.png" width="20%"></img> 
@@ -71,43 +67,94 @@ Below are the analyzes reported by SonarCloud.
     <img src="github-contents/21.png" width="20%"></img> 
     <img src="github-contents/22.png" width="20%"></img> 
     <img src="github-contents/23.png" width="20%"></img> 
+    <img src="github-contents/24.png" width="20%"></img> 
+    <img src="github-contents/25.png" width="20%"></img> 
+    <img src="github-contents/26.png" width="20%"></img> 
 </div>
-
-## Online demo
-
-You can check our online demo here: [Online demo](http://helpdesk.devaslan.com/)
-
-> **Use the following accounts to access demo:**
-> 
-> *Important: The save / delete users functions are disabled only in demo instance*
->
-> **Administrator**
-> - Email: darkvador@gmail.com
-> - Password: secret
->
-> **Customer**
-> - Email: janedoe@gmail.com
-> - Password: secret
->
-> **Employee**
-> - Email: johndoe@gmail.com
-> - Password: secret
 
 ## Documentation
 
-You can find a full documentation here: [Documentation](https://devaslanphp.github.io/help-desk/)
+Full documentation can be viewed online: [Docs](https://devaslanphp.github.io/project-management)
 
 ## Work in progress
 
-We are always working to make Help Desk a better application, to have more information about tasks and features in progress, you can see the [Help Desk project](https://github.com/orgs/devaslanphp/projects/1).
+We are always working to make Project Management a better application, all contributions are welcome.
+
+## Translations
+
+**Important:** translations are automatically generated by Google Translate (using a custom command), so if you find any errors please make sure you create a ticket or add your translations as a contribution to this repository.
 
 ## Credits
 
-- [All Contributors](https://github.com/devaslanphp/help-desk/graphs/contributors)
+- [All Contributors](https://github.com/devaslanphp/project-management/graphs/contributors)
 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## Releases
+
+- **Release 1.0.0**
+  - First Release
+- **Release 1.1.0**
+  - Add _Road Map_ feature
+  - Manage _Epics_ by projects
+- **Release 1.1.1**
+  - Add issue creation (dialog) into kanban view
+- **Release 1.1.2**
+  - Add Epic parent link (dependencies)
+- **Release 1.1.3**
+  - Translate missing langs
+- **Release 1.1.4**
+  - Bug-fix: Ticket content field (required)
+- **Release 1.1.5**
+  - Add comment field to ticket hours logging
+- **Release 1.1.6**
+    - Edit ticket epic details
+    - PR #13 made by @mihaisolomon
+- **Release 1.1.7**
+    - Ticket attachments
+- **Release 1.1.8**
+    - Time logged activities #25 PR integration
+    - #19 by @mihaisolomon : 
+      - Add new resource `Activity` to referential
+      - Add `Activity` to ticket time logging
+      - Add `Activity` column to Excel exportation
+- **Release 1.1.9**
+    - #32 Default user seeder enhancement
+    - #31 Issue resolved
+- **Release 1.2.0**
+    - Scrum module #28
+    - Design enhancement (Kanban / Scrum boards)
+    - Referential updates
+- **Release 1.2.1**
+    - Add jira integration #36
+    - New feature: Import jira projects / tickets
+- **Release 1.2.2**
+    - Dockerize application #23 
+    - PR #45 
+- **Release 1.2.3**
+    - Update german language #52
+    - SSO with OpenID (OIDC) #48
+
+### Thanks to anyone who helps make this project better :heart:
+
+## Sponsors
+
+<div>
+    <a href="https://github.com/moustou1993"><img src="https://avatars.githubusercontent.com/u/48994051?v=4" width="40" /></a>
+    <a href="https://github.com/matbgn"><img src="https://avatars.githubusercontent.com/u/13169819?v=4" width="40" /></a>
+</div>
+
+## Contributors
+
+<div>
+    <a href="https://github.com/heloufir"><img src="https://avatars.githubusercontent.com/u/6197875?v=4" width="40" /></a>
+    <a href="https://github.com/mihaisolomon"><img src="https://avatars.githubusercontent.com/u/17908506?v=4" width="40" /></a>
+    <a href="https://github.com/TheZoker"><img src="https://avatars.githubusercontent.com/u/1368405?v=4" width="40" /></a>
+    <a href="https://github.com/JaccoVE"><img src="https://avatars.githubusercontent.com/u/34547046?v=4" width="40" /></a>
+    <a href="https://github.com/leozfr"><img src="https://avatars.githubusercontent.com/u/57966806?v=4" width="40" /></a>
+</div>
 
 ## Support us
 
