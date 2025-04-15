@@ -2,15 +2,16 @@
 
 namespace App\Http\Livewire;
 
-use App\Jobs\TicketUpdatedJob;
 use App\Models\Ticket;
-use App\Models\TicketPriority;
 use App\Models\TicketType;
-use Filament\Notifications\Notification;
+use Illuminate\Support\Str;
+use App\Jobs\TicketUpdatedJob;
+use App\Models\TicketPriority;
 use Illuminate\Support\Collection;
 use Illuminate\Support\HtmlString;
-use Illuminate\Support\Str;
-use InvadersXX\FilamentKanbanBoard\Pages\FilamentKanbanBoard;
+use Filament\Notifications\Notification;
+use InvadersXX\FilamentKanbanBoard\FilamentKanbanBoard;
+
 
 class Kanban extends FilamentKanbanBoard
 {
