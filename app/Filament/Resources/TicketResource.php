@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Select;
 
 class TicketResource extends Resource
 {
@@ -120,6 +121,13 @@ class TicketResource extends Resource
                                     ->label(__('Ticket responsible'))
                                     ->searchable()
                                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
+
+                                Forms\Components\Select::make('categories')
+                                    ->label(__('Kategori Tiket'))
+                                    ->multiple()
+                                    ->relationship('categories', 'name')
+                                    ->preload()
+                                    ->searchable(),
 
                                 Forms\Components\Grid::make()
                                     ->columns(3)
@@ -281,6 +289,14 @@ class TicketResource extends Resource
                 ->sortable()
                 ->searchable(),
 
+            Tables\Columns\TextColumn::make('categories')
+                ->label(__('Categories'))
+                ->formatStateUsing(
+                    fn($record) => view('partials.filament.resources.ticket-category', ['state' => $record->categories])
+                )
+                ->sortable(false)
+                ->searchable(),
+
             Tables\Columns\TextColumn::make('priority.name')
                 ->label(__('Priority'))
                 ->formatStateUsing(fn($record) => new HtmlString('
@@ -334,6 +350,18 @@ class TicketResource extends Resource
                     ->label(__('Type'))
                     ->multiple()
                     ->options(fn() => TicketType::all()->pluck('name', 'id')->toArray()),
+
+                Tables\Filters\SelectFilter::make('categories')
+                    ->label(__('Categories'))
+                    ->multiple()
+                    ->options(fn () => \App\Models\TicketCategory::pluck('name', 'id')->toArray())
+                    ->query(function ($query, $data) {
+                        if (!empty($data['values'])) {
+                            $query->whereHas('categories', function ($q) use ($data) {
+                                $q->whereIn('ticket_categories.id', $data['values']);
+                            });
+                        }
+                    }),
 
                 Tables\Filters\SelectFilter::make('priority_id')
                     ->label(__('Priority'))

@@ -35,6 +35,7 @@ class ListTickets extends ListRecords
                                 return $query->where('users.id', auth()->user()->id);
                             });
                     });
-            });
+            })
+            ->orderBy('created_at', 'desc');
     }
 }
