@@ -21,6 +21,7 @@ use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Select;
+use App\Models\TicketCategory;
 
 class TicketResource extends Resource
 {
@@ -125,7 +126,7 @@ class TicketResource extends Resource
                                 Forms\Components\Select::make('categories')
                                     ->label(__('Kategori Tiket'))
                                     ->multiple()
-                                    ->relationship('categories', 'name')
+                                    ->options(fn () => TicketCategory::pluck('name', 'id')->toArray())
                                     ->preload()
                                     ->searchable(),
 
