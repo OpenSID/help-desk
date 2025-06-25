@@ -22,7 +22,7 @@ class Ticket extends Model implements HasMedia
     protected $fillable = [
         'name', 'content', 'owner_id', 'responsible_id',
         'status_id', 'project_id', 'code', 'order', 'type_id',
-        'priority_id', 'estimation', 'epic_id', 'sprint_id'
+        'priority_id', 'estimation', 'epic_id', 'sprint_id','master_application_id'
     ];
 
     public static function boot()
@@ -220,5 +220,10 @@ class Ticket extends Model implements HasMedia
         return new Attribute(
             get: fn() => $this->estimationProgress
         );
+    }
+
+    public function masterApplication()
+    {
+        return $this->belongsTo(MasterApplication::class);
     }
 }

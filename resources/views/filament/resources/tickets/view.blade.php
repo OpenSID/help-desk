@@ -106,6 +106,20 @@
                 </div>
             @endif
 
+            <div class="space-y-1">
+                <span class="text-gray-500 text-sm font-medium">
+                    {{ __('Master Application') }}
+                </span>
+                <div class="flex flex-wrap gap-1">
+                    <span
+                        class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                        style="background-color: {{ $record->masterApplication->color }}; color: white;"
+                    >
+                        {{ $record->masterApplication->name }}
+                    </span>
+                </div>
+            </div>
+
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Estimation') }}

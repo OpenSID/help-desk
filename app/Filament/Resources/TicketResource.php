@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
+use App\Models\MasterApplication;
 
 class TicketResource extends Resource
 {
@@ -120,6 +121,12 @@ class TicketResource extends Resource
                                     ->label(__('Ticket responsible'))
                                     ->searchable()
                                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
+
+                                Forms\Components\Select::make('master_application_id')
+                                    ->label(__('Aplikasi'))
+                                    ->searchable()
+                                    ->options(fn() => MasterApplication::all()->pluck('name', 'id')->toArray())
+                                    ->required(),
 
                                 Forms\Components\Grid::make()
                                     ->columns(3)
@@ -278,6 +285,18 @@ class TicketResource extends Resource
                 ->formatStateUsing(
                     fn($record) => view('partials.filament.resources.ticket-type', ['state' => $record->type])
                 )
+                ->sortable()
+                ->searchable(),
+
+            Tables\Columns\TextColumn::make('masterApplication.name')
+                ->label(__('Application'))
+                ->formatStateUsing(function ($record) {
+                    if (!$record->masterApplication) {
+                        return '-'; // atau bisa diganti teks lain seperti "Tidak ada aplikasi"
+                    }
+
+                    return view('partials.filament.resources.master-application', ['state' => $record->masterApplication]);
+                })
                 ->sortable()
                 ->searchable(),
 
