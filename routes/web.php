@@ -3,11 +3,20 @@
 use App\Models\User;
 use App\Models\Ticket;
 use Illuminate\Support\Facades\Route;
-use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use App\Http\Controllers\RoadMap\DataController;
 use App\Http\Controllers\Auth\OidcAuthController;
+use App\Http\Controllers\Public\PublicTicketController;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+
+Route::view('/', 'index')->name('home');
+Route::get('captcha', function () {
+    return captcha_img('flat');
+});
 
 // Share ticket
+Route::get('/tickets/public/check', [PublicTicketController::class, 'getCaptcha'])->name('tickets.public.captcha');
+Route::post('/tickets/public/check', [PublicTicketController::class, 'checkTicket'])->name('tickets.public.check');
+
 Route::get('/tickets/share/{ticket:code}', function (Ticket $ticket) {
     return redirect()->to(route('filament.resources.tickets.view', $ticket));
 })->name('filament.resources.tickets.share');
