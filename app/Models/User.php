@@ -125,4 +125,9 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     {
         return true;
     }
+    
+    public function routeNotificationForMail($notification)
+    {
+        return null; // Mengembalikan null akan mematikan pengiriman email
+    }
 }
