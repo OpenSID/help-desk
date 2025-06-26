@@ -13,16 +13,27 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('companies', function (Blueprint $table) {
+        if (!Schema::hasTable('companies')) {
+            Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('logo')->nullable();
             $table->longText('description')->nullable();
             $table->boolean('is_disabled')->default(false);
-            $table->foreignId('responsible_id')->constrained('users');
+            $table->unsignedBigInteger('responsible_id');
             $table->softDeletes();
             $table->timestamps();
-        });
+
+            // Indexes
+            $table->index('responsible_id', 'companies_responsible_id_foreign');
+
+            // Foreign Keys
+            $table->foreign('responsible_id', 'companies_responsible_id_foreign')
+                  ->references('id')->on('users')
+                  ->onDelete('restrict')
+                  ->onUpdate('restrict');
+            });
+        }
     }
 
     /**
