@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Models\Ticket;
+use App\Filament\Pages\Dashboard;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoadMap\DataController;
 use App\Http\Controllers\Auth\OidcAuthController;
@@ -9,6 +10,13 @@ use App\Http\Controllers\Public\PublicTicketController;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 
 Route::view('/', 'index')->name('home');
+// Route::redirect('/dashboard', '/admin/dashboard') ;
+
+// Dashboard route - redirect to Board page
+// Route::get('/dashboard', function () {
+//     return redirect()->to(route('filament.pages.board'));
+// })->name('filament.pages.dashboard');
+ 
 Route::get('captcha', function () {
     return captcha_img('flat');
 });

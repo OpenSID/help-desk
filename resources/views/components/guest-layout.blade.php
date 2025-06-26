@@ -20,7 +20,7 @@
 
             {{-- Tombol Login Admin di tengah --}}
             <div class="mt-10 flex justify-center">
-                <a href="{{ url('/admin/login') }}"
+                <a href="{{ url('/login') }}"
                    class="flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-800 transition font-semibold text-lg"
                    title="Login Admin">
                     <!-- Heroicon: Lock Closed -->
