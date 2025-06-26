@@ -261,5 +261,6 @@
     "The platform default role (used mainly in OIDC Connect).": "Peran default platform (digunakan terutama di OIDC Connect).",
     "OIDC Connect error": "Kesalahan Koneksi OIDC",
     "Invalid account!": "Akun tidak berlaku!",
-    "OIDC Connect": "Koneksi OIDC"
+    "OIDC Connect": "Koneksi OIDC",
+    "Telegram Username": "Nama pengguna Telegram"
 }
