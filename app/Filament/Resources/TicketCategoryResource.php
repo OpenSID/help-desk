@@ -23,7 +23,7 @@ class TicketCategoryResource extends Resource
 
     protected static function getNavigationLabel(): string
     {
-        return __('Ticket Categories');
+        return __('Solution Categories');
     }
 
     public static function getPluralLabel(): ?string

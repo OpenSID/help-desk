@@ -124,7 +124,7 @@ class TicketResource extends Resource
                                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
 
                                 Forms\Components\Select::make('categories')
-                                    ->label(__('Kategori Tiket'))
+                                    ->label(__('Solution Categories'))
                                     ->multiple()
                                     ->options(fn () => TicketCategory::pluck('name', 'id')->toArray())
                                     ->preload()

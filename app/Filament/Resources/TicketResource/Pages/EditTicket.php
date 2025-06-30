@@ -20,15 +20,15 @@ class EditTicket extends EditRecord
 
     protected array $categories = [];
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function mutateFormDataBeforeFill(array $data): array
     {
-        $this->categories = $data['categories'] ?? [];
-        unset($data['categories']);
+        $data['categories'] = $this->record->categories()->pluck('id')->toArray();
         return $data;
     }
 
-    protected function afterCreate(): void
+    protected function afterSave(): void
     {
-        $this->record->categories()->sync($this->categories);
+        $this->record->categories()->sync($this->data['categories'] ?? []);
     }
+
 }

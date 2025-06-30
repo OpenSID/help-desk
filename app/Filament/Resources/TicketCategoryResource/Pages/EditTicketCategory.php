@@ -10,6 +10,11 @@ class EditTicketCategory extends EditRecord
 {
     protected static string $resource = TicketCategoryResource::class;
 
+    protected function getTitle(): string
+    {
+        return __('Edit Solution Categories');
+    }
+
     protected function getActions(): array
     {
         return [
