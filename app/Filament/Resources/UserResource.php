@@ -61,8 +61,8 @@ class UserResource extends Resource
                                     )
                                     ->maxLength(255),
 
-                                Forms\Components\TextInput::make('telegram_username')
-                                    ->label(__('Telegram Username'))
+                                Forms\Components\TextInput::make('telegram_id')
+                                    ->label(__('Telegram Id'))
                                     ->maxLength(255),
 
                                 Forms\Components\CheckboxList::make('roles')
@@ -89,7 +89,7 @@ class UserResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('telegram_username')
+                Tables\Columns\TextColumn::make('telegram_id')
                     ->label(__('Telegram Username'))
                     ->sortable()
                     ->searchable(),

@@ -44,7 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         'type',
         'oidc_username',
         'email_verified_at',
-        'telegram_username',
+        'telegram_id',
     ];
 
     /**
@@ -132,7 +132,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     {
         return true;
     }
-  
+
     public function routeNotificationForMail($notification)
     {
         return null; // Mengembalikan null akan mematikan pengiriman email
