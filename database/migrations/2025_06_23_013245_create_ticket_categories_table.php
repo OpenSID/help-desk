@@ -6,8 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
     /**
-     * Run the migrations.
+     * Melakukan migrasi ke tabel ticket_categories
      *
      * @return void
      */
@@ -15,9 +16,9 @@ return new class extends Migration
     {
         Schema::create('ticket_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('color')->default('#000000'); // Default color
-            $table->softDeletes(); // For soft deletes
+            $table->string('name'); // Nama kategori tiket
+            $table->string('color')->default('#000000'); // Warna default kategori tiket
+            $table->softDeletes(); // Untuk soft deletes
             $table->timestamps();
         });
     }

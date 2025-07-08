@@ -31,34 +31,59 @@ class TicketResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    /**
+     * Mendapatkan label navigasi untuk resource ini.
+     *
+     * @return string Label navigasi (diterjemahkan)
+     */
     protected static function getNavigationLabel(): string
     {
         return __('Tickets');
     }
 
+    /**
+     * Mendapatkan label jamak (plural) untuk resource ini.
+     *
+     * @return string|null Label plural (diterjemahkan)
+     */
     public static function getPluralLabel(): ?string
     {
         return static::getNavigationLabel();
     }
 
+    /**
+     * Mendapatkan grup navigasi untuk resource ini.
+     *
+     * @return string|null Nama grup navigasi (diterjemahkan)
+     */
     protected static function getNavigationGroup(): ?string
     {
         return __('Management');
     }
 
+    /**
+     * Mendefinisikan form input untuk create/edit tiket.
+     *
+     * @param Form $form Instance form Filament
+     * @return Form Form dengan skema input
+     */
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                // Card utama untuk form tiket
                 Forms\Components\Card::make()
                     ->schema([
+                        // Grid utama
                         Forms\Components\Grid::make()
                             ->schema([
+                                // Pilihan project
                                 Forms\Components\Select::make('project_id')
                                     ->label(__('Project'))
                                     ->searchable()
                                     ->reactive()
                                     ->afterStateUpdated(function ($get, $set) {
+                                        // Update status_id sesuai project
                                         $project = Project::where('id', $get('project_id'))->first();
                                         if ($project?->status_type === 'custom') {
                                             $set(
@@ -85,6 +110,7 @@ class TicketResource extends Resource
                                     )
                                     ->default(fn() => request()->get('project'))
                                     ->required(),
+                                // Pilihan epic
                                 Forms\Components\Select::make('epic_id')
                                     ->label(__('Epic'))
                                     ->searchable()
@@ -92,16 +118,19 @@ class TicketResource extends Resource
                                     ->options(function ($get, $set) {
                                         return Epic::where('project_id', $get('project_id'))->pluck('name', 'id')->toArray();
                                     }),
+                                // Grid untuk kode dan nama tiket
                                 Forms\Components\Grid::make()
                                     ->columns(12)
                                     ->columnSpan(2)
                                     ->schema([
+                                        // Input kode tiket (hanya edit)
                                         Forms\Components\TextInput::make('code')
                                             ->label(__('Ticket code'))
                                             ->visible(fn($livewire) => !($livewire instanceof CreateRecord))
                                             ->columnSpan(2)
                                             ->disabled(),
 
+                                        // Input nama tiket
                                         Forms\Components\TextInput::make('name')
                                             ->label(__('Ticket name'))
                                             ->required()
@@ -110,30 +139,31 @@ class TicketResource extends Resource
                                             )
                                             ->maxLength(255),
                                     ]),
-
+                                // Pilihan owner tiket
                                 Forms\Components\Select::make('owner_id')
                                     ->label(__('Ticket owner'))
                                     ->searchable()
                                     ->options(fn() => User::all()->pluck('name', 'id')->toArray())
                                     ->default(fn() => auth()->user()->id)
                                     ->required(),
-
+                                // Pilihan penanggung jawab tiket
                                 Forms\Components\Select::make('responsible_id')
                                     ->label(__('Ticket responsible'))
                                     ->searchable()
                                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
-
+                                // Pilihan kategori solusi (bisa banyak)
                                 Forms\Components\Select::make('categories')
                                     ->label(__('Solution Categories'))
                                     ->multiple()
                                     ->options(fn () => TicketCategory::pluck('name', 'id')->toArray())
                                     ->preload()
                                     ->searchable(),
-
+                                // Grid untuk status, tipe, prioritas
                                 Forms\Components\Grid::make()
                                     ->columns(3)
                                     ->columnSpan(2)
                                     ->schema([
+                                        // Pilihan status tiket
                                         Forms\Components\Select::make('status_id')
                                             ->label(__('Ticket status'))
                                             ->searchable()
@@ -166,14 +196,14 @@ class TicketResource extends Resource
                                                 }
                                             })
                                             ->required(),
-
+                                        // Pilihan tipe tiket
                                         Forms\Components\Select::make('type_id')
                                             ->label(__('Ticket type'))
                                             ->searchable()
                                             ->options(fn() => TicketType::all()->pluck('name', 'id')->toArray())
                                             ->default(fn() => TicketType::where('is_default', true)->first()?->id)
                                             ->required(),
-
+                                        // Pilihan prioritas tiket
                                         Forms\Components\Select::make('priority_id')
                                             ->label(__('Ticket priority'))
                                             ->searchable()
@@ -183,11 +213,13 @@ class TicketResource extends Resource
                                     ]),
                             ]),
 
+                        // Editor konten tiket
                         Forms\Components\RichEditor::make('content')
                             ->label(__('Ticket content'))
                             ->required()
                             ->columnSpan(2),
 
+                        // Grid estimasi waktu
                         Forms\Components\Grid::make()
                             ->columnSpan(2)
                             ->columns(12)
@@ -198,6 +230,7 @@ class TicketResource extends Resource
                                     ->columnSpan(2),
                             ]),
 
+                        // Repeater relasi tiket
                         Forms\Components\Repeater::make('relations')
                             ->itemLabel(function (array $state) {
                                 $ticketRelation = TicketRelation::find($state['id'] ?? 0);
@@ -218,6 +251,7 @@ class TicketResource extends Resource
                                 Forms\Components\Grid::make()
                                     ->columns(3)
                                     ->schema([
+                                        // Pilihan tipe relasi
                                         Forms\Components\Select::make('type')
                                             ->label(__('Relation type'))
                                             ->required()
@@ -225,6 +259,8 @@ class TicketResource extends Resource
                                             ->options(config('system.tickets.relations.list'))
                                             ->default(fn() => config('system.tickets.relations.default')),
 
+
+                                        // Pilihan tiket terkait
                                         Forms\Components\Select::make('relation_id')
                                             ->label(__('Related ticket'))
                                             ->required()
@@ -243,6 +279,12 @@ class TicketResource extends Resource
             ]);
     }
 
+    /**
+     * Mendefinisikan kolom tabel untuk daftar tiket.
+     *
+     * @param bool $withProject Apakah menampilkan kolom project
+     * @return array Daftar kolom tabel
+     */
     public static function tableColumns(bool $withProject = true): array
     {
         $columns = [];
@@ -253,23 +295,27 @@ class TicketResource extends Resource
                 ->searchable();
         }
         $columns = array_merge($columns, [
+            // Kolom nama tiket
             Tables\Columns\TextColumn::make('name')
                 ->label(__('Ticket name'))
                 ->sortable()
                 ->searchable(),
 
+            // Kolom owner
             Tables\Columns\TextColumn::make('owner.name')
                 ->label(__('Owner'))
                 ->sortable()
                 ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->owner]))
                 ->searchable(),
 
+            // Kolom penanggung jawab
             Tables\Columns\TextColumn::make('responsible.name')
                 ->label(__('Responsible'))
                 ->sortable()
                 ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->responsible]))
                 ->searchable(),
 
+            // Kolom status
             Tables\Columns\TextColumn::make('status.name')
                 ->label(__('Status'))
                 ->formatStateUsing(fn($record) => new HtmlString('
@@ -282,6 +328,7 @@ class TicketResource extends Resource
                 ->sortable()
                 ->searchable(),
 
+            // Kolom tipe
             Tables\Columns\TextColumn::make('type.name')
                 ->label(__('Type'))
                 ->formatStateUsing(
@@ -290,6 +337,7 @@ class TicketResource extends Resource
                 ->sortable()
                 ->searchable(),
 
+            // Kolom kategori
             Tables\Columns\TextColumn::make('categories')
                 ->label(__('Categories'))
                 ->formatStateUsing(
@@ -298,6 +346,7 @@ class TicketResource extends Resource
                 ->sortable(false)
                 ->searchable(),
 
+            // Kolom prioritas
             Tables\Columns\TextColumn::make('priority.name')
                 ->label(__('Priority'))
                 ->formatStateUsing(fn($record) => new HtmlString('
@@ -310,6 +359,7 @@ class TicketResource extends Resource
                 ->sortable()
                 ->searchable(),
 
+            // Kolom tanggal dibuat
             Tables\Columns\TextColumn::make('created_at')
                 ->label(__('Created at'))
                 ->dateTime()
@@ -319,11 +369,18 @@ class TicketResource extends Resource
         return $columns;
     }
 
+    /**
+     * Mendefinisikan tabel daftar tiket.
+     *
+     * @param Table $table Instance tabel Filament
+     * @return Table Tabel dengan kolom dan aksi
+     */
     public static function table(Table $table): Table
     {
         return $table
             ->columns(self::tableColumns())
             ->filters([
+                // Filter project
                 Tables\Filters\SelectFilter::make('project_id')
                     ->label(__('Project'))
                     ->multiple()
@@ -332,26 +389,31 @@ class TicketResource extends Resource
                             return $query->where('users.id', auth()->user()->id);
                         })->pluck('name', 'id')->toArray()),
 
+                // Filter owner
                 Tables\Filters\SelectFilter::make('owner_id')
                     ->label(__('Owner'))
                     ->multiple()
                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
 
+                // Filter penanggung jawab
                 Tables\Filters\SelectFilter::make('responsible_id')
                     ->label(__('Responsible'))
                     ->multiple()
                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
 
+                // Filter status
                 Tables\Filters\SelectFilter::make('status_id')
                     ->label(__('Status'))
                     ->multiple()
                     ->options(fn() => TicketStatus::all()->pluck('name', 'id')->toArray()),
 
+                // Filter tipe
                 Tables\Filters\SelectFilter::make('type_id')
                     ->label(__('Type'))
                     ->multiple()
                     ->options(fn() => TicketType::all()->pluck('name', 'id')->toArray()),
 
+                // Filter kategori
                 Tables\Filters\SelectFilter::make('categories')
                     ->label(__('Categories'))
                     ->multiple()
@@ -364,27 +426,40 @@ class TicketResource extends Resource
                         }
                     }),
 
+                // Filter prioritas
                 Tables\Filters\SelectFilter::make('priority_id')
                     ->label(__('Priority'))
                     ->multiple()
                     ->options(fn() => TicketPriority::all()->pluck('name', 'id')->toArray()),
             ])
             ->actions([
+                // Aksi lihat dan edit
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
+                // Aksi hapus massal
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
+    /**
+     * Mendefinisikan relasi yang tersedia untuk resource ini.
+     *
+     * @return array Daftar relasi
+     */
     public static function getRelations(): array
     {
         return [
-            //
+            // Tambahkan relasi jika ada
         ];
     }
 
+    /**
+     * Mendefinisikan halaman-halaman (routes) untuk resource ini.
+     *
+     * @return array Daftar halaman dan route-nya
+     */
     public static function getPages(): array
     {
         return [
