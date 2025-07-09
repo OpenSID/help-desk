@@ -48,7 +48,7 @@ class PublicTicketCheck extends Component
 
         $ticketService = new PublicTicketService();
         $ticket = $ticketService->getTicketByCode($this->ticket_code);
-        $this->ticket = collect($ticket);
+        $this->ticket = $ticket;
 
         if (empty($this->ticket)) {
             $this->message = 'Tiket tidak ditemukan!';
