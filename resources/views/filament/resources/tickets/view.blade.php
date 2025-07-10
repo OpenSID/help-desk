@@ -211,6 +211,25 @@
                 </div>
             </div>
 
+            {{-- Milestone --}}
+            <div class="space-y-1">
+                <span class="text-gray-500 text-sm font-medium">
+                    {{ __('Milestone') }}
+                </span>
+                @if ($record->milestone)
+                    <div class="flex flex-wrap gap-1">
+                        <span
+                            class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                            style="background-color: {{ $record->milestone->color }}; color: white;"
+                        >
+                            {{ $record->milestone->name }}
+                        </span>
+                    </div>
+                @else
+                    <p class="text-sm text-gray-400">-</p>
+                @endif
+            </div>
+
             {{-- Tanggal pembuatan --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
