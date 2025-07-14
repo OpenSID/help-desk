@@ -263,5 +263,14 @@
     "Invalid account!": "Akun tidak berlaku!",
     "OIDC Connect": "Koneksi OIDC",
     "Telegram Username": "Nama pengguna Telegram",
-    "Telegram Id": "ID Telegram"
+    "Telegram Id": "ID Telegram",
+    "Ticket Categories": "Kategori Tiket",
+    "Solution Categories": "Kategori Solusi",
+    "Crete Solution Categories": "Buat Kategori Solusi",
+    "Edit Solution Categories": "Ubah Kategori Solusi",
+    "Category": "Kategori",
+    "Category name": "Nama kategori",
+    "Category color": "Warna kategori",
+    "Color": "Warna",
+    "Name": "Nama"
 }

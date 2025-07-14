@@ -17,4 +17,18 @@ class EditTicket extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected array $categories = [];
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['categories'] = $this->record->categories()->pluck('id')->toArray();
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        $this->record->categories()->sync($this->data['categories'] ?? []);
+    }
+
 }

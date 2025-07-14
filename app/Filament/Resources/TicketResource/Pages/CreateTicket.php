@@ -12,12 +12,21 @@ class CreateTicket extends CreateRecord
 {
     protected static string $resource = TicketResource::class;
 
+    protected array $categories = [];
+
     protected TelegramService $telegram;
 
     public function __construct($id = null)
     {
         parent::__construct($id);
         $this->telegram = app(TelegramService::class); // Ambil service dari container Laravel
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $this->categories = $data['categories'] ?? [];
+        unset($data['categories']);
+        return $data;
     }
 
     protected function afterCreate(): void
@@ -41,6 +50,7 @@ class CreateTicket extends CreateRecord
             . "🔗 <a href=\"{$link}\">Lihat Tiket</a>";
 
         $this->telegram->sendMessage($message, $assignee);
+        $this->record->categories()->sync($this->categories);
     }
 }
 

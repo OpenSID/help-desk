@@ -1,6 +1,15 @@
+{{--
+    view.blade.php
+    Halaman detail tiket pada modul Filament.
+    - Menampilkan detail tiket, status, prioritas, tipe, owner, responsible, sprint/epic, kategori, estimasi, waktu log, subscriber, tanggal pembuatan & update, relasi tiket, komentar, aktivitas, time log, dan lampiran.
+    - Terdapat navigasi kembali ke kanban board.
+    - Menggunakan komponen-komponen custom dan Livewire.
+--}}
+
 @php($record = $this->record)
 <x-filament::page>
 
+    {{-- Tombol kembali ke kanban board --}}
     <a href="{{ route('filament.pages.kanban/{project}', ['project' => $record->project->id]) }}"
        class="flex items-center gap-1 text-gray-500 hover:text-gray-700 font-medium text-xs">
         <x-heroicon-o-arrow-left class="w-4 h-4"/> {{ __('Back to kanban board') }}
@@ -8,8 +17,10 @@
 
     <div class="w-full flex md:flex-row flex-col gap-5">
 
+        {{-- Kartu utama detail tiket --}}
         <x-filament::card class="md:w-2/3 w-full flex flex-col gap-5">
             <div class="w-full flex flex-col gap-0">
+                {{-- Header: kode, project, nama tiket --}}
                 <div class="flex items-center gap-2">
                     <span class="flex items-center gap-1 text-sm text-primary-500 font-medium">
                         <x-heroicon-o-ticket class="w-4 h-4"/>
@@ -25,6 +36,7 @@
                 </span>
             </div>
             <div class="w-full flex items-center gap-2">
+                {{-- Status, Prioritas, Tipe --}}
                 <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
                      style="background-color: {{ $record->status->color }};">
                     {{ $record->status->name }}
@@ -42,6 +54,7 @@
                 </div>
             </div>
             <div class="w-full flex flex-col gap-0 pt-5">
+                {{-- Konten tiket --}}
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Content') }}
                 </span>
@@ -51,7 +64,9 @@
             </div>
         </x-filament::card>
 
+        {{-- Kartu info samping: owner, responsible, sprint/epic, kategori, estimasi, waktu log, subscriber, tanggal, relasi --}}
         <x-filament::card class="md:w-1/3 w-full flex flex-col">
+            {{-- Owner --}}
             <div class="w-full flex flex-col gap-1" wire:ignore>
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Owner') }}
@@ -62,6 +77,7 @@
                 </div>
             </div>
 
+            {{-- Responsible --}}
             <div class="w-full flex flex-col gap-1 pt-3" wire:ignore>
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Responsible') }}
@@ -74,6 +90,7 @@
                 </div>
             </div>
 
+            {{-- Sprint/Epic --}}
             @if($record->project->type === 'scrum')
                 <div class="w-full flex flex-col gap-1 pt-3">
                     <span class="text-gray-500 text-sm font-medium">
@@ -106,6 +123,28 @@
                 </div>
             @endif
 
+            {{-- Kategori --}}
+            <div class="space-y-1">
+                <span class="text-gray-500 text-sm font-medium">
+                    {{ __('Category') }}
+                </span>
+                @if ($record->categories->count())
+                    <div class="flex flex-wrap gap-1">
+                        @foreach ($record->categories as $category)
+                            <span
+                                class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                                style="background-color: {{ $category->color }}; color: white;"
+                            >
+                                {{ $category->name }}
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-gray-400">-</p>
+                @endif
+            </div>
+
+            {{-- Estimasi waktu --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Estimation') }}
@@ -119,6 +158,7 @@
                 </div>
             </div>
 
+            {{-- Total waktu log --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Total time logged') }}
@@ -155,6 +195,7 @@
                 @endif
             </div>
 
+            {{-- Subscriber --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Subscribers') }}
@@ -170,6 +211,7 @@
                 </div>
             </div>
 
+            {{-- Tanggal pembuatan --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Creation date') }}
@@ -182,6 +224,7 @@
                 </div>
             </div>
 
+            {{-- Tanggal update --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Last update') }}
@@ -194,6 +237,7 @@
                 </div>
             </div>
 
+            {{-- Relasi tiket --}}
             @if($record->relations->count())
                 <div class="w-full flex flex-col gap-1 pt-3">
                     <span class="text-gray-500 text-sm font-medium">
@@ -221,6 +265,7 @@
 
     <div class="w-full flex md:flex-row flex-col gap-5">
 
+        {{-- Tab komentar, aktivitas, time log, lampiran --}}
         <x-filament::card class="md:w-2/3 w-full flex flex-col">
             <div class="w-full flex items-center gap-2">
                 <button wire:click="selectTab('comments')"
@@ -244,6 +289,7 @@
                     {{ __('Attachments') }}
                 </button>
             </div>
+            {{-- Tab Komentar --}}
             @if($tab === 'comments')
                 <form wire:submit.prevent="submitComment" class="pb-5">
                     {{ $this->form }}
@@ -291,6 +337,7 @@
                     </div>
                 @endforeach
             @endif
+            {{-- Tab Aktivitas --}}
             @if($tab === 'activities')
                 <div class="w-full flex flex-col pt-5">
                     @if($record->activities->count())
@@ -322,9 +369,11 @@
                     @endif
                 </div>
             @endif
+            {{-- Tab Time Log --}}
             @if($tab === 'time')
                 <livewire:timesheet.time-logged :ticket="$record" />
             @endif
+            {{-- Tab Lampiran --}}
             @if($tab === 'attachments')
                 <livewire:ticket.attachments :ticket="$record" />
             @endif
@@ -336,6 +385,7 @@
 
 </x-filament::page>
 
+{{-- Script untuk fitur share ticket --}}
 @push('scripts')
     <script>
         window.addEventListener('shareTicket', (e) => {
