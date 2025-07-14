@@ -34,10 +34,10 @@ class CreateTicket extends CreateRecord
         $ticket = $this->record;
         $title = htmlspecialchars($ticket->name, ENT_QUOTES, 'UTF-8');
         $owner = htmlspecialchars(optional($ticket->owner)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
-        $assignee = optional($ticket->responsible)->telegram_id ?? null;
+        $assignee = optional($ticket->responsible)->telegram_id ?? config('services.telegram.group_id_telegram');
         $mention = htmlspecialchars(optional($ticket->responsible)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
         $createdAt = htmlspecialchars($ticket->created_at->format('d M Y H:i'), ENT_QUOTES, 'UTF-8');
-        $content = htmlspecialchars(Str::limit(strip_tags($ticket->content), 25, '...'), ENT_QUOTES, 'UTF-8');
+        $content = htmlspecialchars(Str::limit(strip_tags($ticket->content), 50, '...'), ENT_QUOTES, 'UTF-8');
         $link = htmlspecialchars(route('filament.resources.tickets.view', $ticket->id), ENT_QUOTES, 'UTF-8');
 
         $message = "🆕 <b>Tiket Baru Dibuat</b>\n"

@@ -90,7 +90,7 @@ class UserResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('telegram_id')
-                    ->label(__('Telegram Username'))
+                    ->label(__('Telegram id'))
                     ->sortable()
                     ->searchable(),
 
