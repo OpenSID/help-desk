@@ -67,4 +67,9 @@ return [
         'scope' => explode(",", env('OIDC_SCOPE', '')),
     ],
 
+    'telegram' => [
+        'bot_token_telegram' => env('TELEGRAM_BOT_TOKEN'),
+        'group_id_telegram' => env('TELEGRAM_GROUP_ID'),
+    ],
+
 ];
