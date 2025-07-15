@@ -13,11 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('icons', function (Blueprint $table) {
+        if (!Schema::hasTable('icons')) {
+            Schema::create('icons', function (Blueprint $table) {
             $table->id();
             $table->string('icon');
             $table->timestamps();
-        });
+            });
+        }
     }
 
     /**

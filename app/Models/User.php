@@ -22,8 +22,14 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
-    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable,
-        HasRoles, HasAvatarUrl, SoftDeletes, MustVerifyNewEmail;
+    use HasApiTokens,
+        HasFactory,
+        Notifiable,
+        TwoFactorAuthenticatable,
+        HasRoles,
+        HasAvatarUrl,
+        SoftDeletes,
+        MustVerifyNewEmail;
 
     /**
      * The attributes that are mass assignable.
@@ -38,6 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         'type',
         'oidc_username',
         'email_verified_at',
+        'telegram_id',
     ];
 
     /**
@@ -124,5 +131,10 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
     public function canAccessFilament(): bool
     {
         return true;
+    }
+
+    public function routeNotificationForMail($notification)
+    {
+        return null; // Mengembalikan null akan mematikan pengiriman email
     }
 }

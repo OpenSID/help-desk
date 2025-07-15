@@ -64,7 +64,12 @@ return [
         'url_authorize' => env('OIDC_URL_AUTHORIZE'),
         'url_access_token' => env('OIDC_URL_ACCESS_TOKEN'),
         'url_resource_owner_details' => env('OIDC_URL_RESOURCE_OWNER_DETAILS'),
-        'scope' => explode(",", env('OIDC_SCOPE', 'openid,email,profile')),
+        'scope' => explode(",", env('OIDC_SCOPE', '')),
+    ],
+
+    'telegram' => [
+        'bot_token_telegram' => env('TELEGRAM_BOT_TOKEN'),
+        'group_id_telegram' => env('TELEGRAM_GROUP_ID'),
     ],
 
 ];

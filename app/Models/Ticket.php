@@ -226,4 +226,9 @@ class Ticket extends Model implements HasMedia
     {
         return $this->belongsTo(MasterApplication::class);
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(TicketCategory::class, 'ticket_categories_pivot');
+    }
 }
