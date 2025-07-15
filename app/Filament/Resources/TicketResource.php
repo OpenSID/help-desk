@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TicketResource\Pages;
-use App\Filament\Resources\TicketResource\RelationManagers;
 use App\Models\Epic;
 use App\Models\Project;
 use App\Models\Ticket;
@@ -20,7 +19,7 @@ use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
-use Filament\Forms\Components\Select;
+use App\Models\MasterApplication;
 use App\Models\TicketCategory;
 use App\Models\Milestone;
 use Carbon\Carbon;
@@ -153,6 +152,12 @@ class TicketResource extends Resource
                                     ->label(__('Ticket responsible'))
                                     ->searchable()
                                     ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
+
+                                Forms\Components\Select::make('master_application_id')
+                                    ->label(__('Aplikasi'))
+                                    ->searchable()
+                                    ->options(fn() => MasterApplication::all()->pluck('name', 'id')->toArray()),
+
                                 // Pilihan kategori solusi (bisa banyak)
                                 Forms\Components\Select::make('categories')
                                     ->label(__('Solution Categories'))
@@ -356,6 +361,18 @@ class TicketResource extends Resource
                 ->formatStateUsing(
                     fn($record) => view('partials.filament.resources.ticket-type', ['state' => $record->type])
                 )
+                ->sortable()
+                ->searchable(),
+
+            Tables\Columns\TextColumn::make('masterApplication.name')
+                ->label(__('Application'))
+                ->formatStateUsing(function ($record) {
+                    if (!$record->masterApplication) {
+                        return '-'; // atau bisa diganti teks lain seperti "Tidak ada aplikasi"
+                    }
+
+                    return view('partials.filament.resources.master-application', ['state' => $record->masterApplication]);
+                })
                 ->sortable()
                 ->searchable(),
 
