@@ -9,14 +9,14 @@
     "src": "resources/js/app.js",
     "isEntry": true
   },
-  "resources/css/app.scss": {
-    "file": "assets/app.db3227be.css",
-    "src": "resources/css/app.scss",
-    "isEntry": true
-  },
   "resources/css/filament.scss": {
     "file": "assets/filament.5be4d84e.css",
     "src": "resources/css/filament.scss",
+    "isEntry": true
+  },
+  "resources/css/app.scss": {
+    "file": "assets/app.db3227be.css",
+    "src": "resources/css/app.scss",
     "isEntry": true
   }
 }
