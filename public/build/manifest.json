@@ -4,18 +4,8 @@
     "src": "resources/js/filament.js",
     "isEntry": true
   },
-  "resources/js/app.js": {
-    "file": "assets/app.fd2c5f91.js",
-    "src": "resources/js/app.js",
-    "isEntry": true
-  },
-  "resources/css/app.scss": {
-    "file": "assets/app.2838ff4a.css",
-    "src": "resources/css/app.scss",
-    "isEntry": true
-  },
   "resources/css/filament.scss": {
-    "file": "assets/filament.9fd93c9d.css",
+    "file": "assets/filament.a24e4e42.css",
     "src": "resources/css/filament.scss",
     "isEntry": true
   }

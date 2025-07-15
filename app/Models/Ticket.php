@@ -221,4 +221,9 @@ class Ticket extends Model implements HasMedia
             get: fn() => $this->estimationProgress
         );
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(TicketCategory::class, 'ticket_categories_pivot');
+    }
 }
