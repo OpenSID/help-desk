@@ -154,8 +154,7 @@ class TicketResource extends Resource
                                 Forms\Components\Select::make('master_application_id')
                                     ->label(__('Aplikasi'))
                                     ->searchable()
-                                    ->options(fn() => MasterApplication::all()->pluck('name', 'id')->toArray())
-                                    ->required(),
+                                    ->options(fn() => MasterApplication::all()->pluck('name', 'id')->toArray()),
 
                                 // Pilihan kategori solusi (bisa banyak)
                                 Forms\Components\Select::make('categories')
