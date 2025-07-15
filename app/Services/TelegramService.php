@@ -13,6 +13,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
 class TelegramService
@@ -66,26 +67,16 @@ class TelegramService
 
         try {
             Http::timeout(10)
-                ->async()
                 ->post("{$this->baseUrl}/sendMessage", [
                     'chat_id' => $chatId,
                     'text' => $message,
                     'parse_mode' => 'HTML',
-                ])
-                ->then(function ($response) use ($chatId, $message) {
-                    // Logging jika response gagal
-                    if (!$response->successful()) {
-                        \Log::error('Telegram send message failed', [
-                            'status' => $response->status(),
-                            'response' => $response->body(),
-                            'chat_id' => $chatId,
-                            'message' => $message
-                        ]);
-                    }
-                });
+                ]);
+
         } catch (\Exception $e) {
             // Logging jika terjadi exception saat request
-            \Log::error('Telegram send message exception', [
+
+            Log::error('Telegram send message exception', [
                 'error' => $e->getMessage(),
                 'chat_id' => $chatId,
                 'message' => $message
