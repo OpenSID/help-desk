@@ -365,7 +365,7 @@ class TicketResource extends Resource
                 ->searchable(),
 
             Tables\Columns\TextColumn::make('masterApplication.name')
-                ->label(__('Application'))
+                ->label(__('Master Application'))
                 ->formatStateUsing(function ($record) {
                     if (!$record->masterApplication) {
                         return '-'; // atau bisa diganti teks lain seperti "Tidak ada aplikasi"
@@ -373,7 +373,7 @@ class TicketResource extends Resource
 
                     return view('partials.filament.resources.master-application', ['state' => $record->masterApplication]);
                 })
-                ->sortable()
+                ->sortable(false)
                 ->searchable(),
 
             // Kolom kategori
@@ -462,6 +462,12 @@ class TicketResource extends Resource
                     ->multiple()
                     ->options(fn() => TicketType::all()->pluck('name', 'id')->toArray()),
 
+                // Filter masteraplikasi
+                Tables\Filters\SelectFilter::make('master_application_id')
+                    ->label(__('Master Application'))
+                    ->multiple()
+                    ->options(fn() => MasterApplication::all()->pluck('name', 'id')->toArray()),
+
                 // Filter kategori
                 Tables\Filters\SelectFilter::make('categories')
                     ->label(__('Categories'))
@@ -485,7 +491,7 @@ class TicketResource extends Resource
                 Tables\Filters\SelectFilter::make('milestone_id')
                     ->label(__('Milestone'))
                     ->multiple()
-                    ->options(fn() => TicketPriority::all()->pluck('name', 'id')->toArray()),
+                    ->options(fn() => Milestone::all()->pluck('name', 'id')->toArray()),
             ])
             ->actions([
                 // Aksi lihat dan edit
