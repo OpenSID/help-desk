@@ -36,3 +36,14 @@ Route::name('oidc.')
         Route::get('redirect', [OidcAuthController::class, 'redirect'])->name('redirect');
         Route::get('callback', [OidcAuthController::class, 'callback'])->name('callback');
     });
+
+Route::get('/test-github-issue', function () {
+    $github = new \App\Services\GithubService();
+    $issue = $github->createIssue([
+        'title' => 'Test Issue dari Laravel XSX',
+        'body' => 'Ini adalah test issue dari sistem Helpdesk Laravel.',
+        'assignees' => ['ujgsp'],
+        'labels' => ['test', 'helpdesk'],
+    ]);
+    return $issue;
+});

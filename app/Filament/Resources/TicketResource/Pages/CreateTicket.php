@@ -13,10 +13,12 @@
 
 namespace App\Filament\Resources\TicketResource\Pages;
 
-use App\Filament\Resources\TicketResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Models\Ticket;
 use Illuminate\Support\Str;
 use App\Services\TelegramService;
+use Illuminate\Support\Facades\Log;
+use App\Filament\Resources\TicketResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateTicket extends CreateRecord
 {
@@ -102,5 +104,55 @@ class CreateTicket extends CreateRecord
         // Sinkronisasi kategori tiket (many-to-many)
         $this->record->categories()->sync($this->categories);
     }
-}
 
+    protected function handleRecordCreation(array $data): Ticket
+    {
+        try {
+            $ticket = parent::handleRecordCreation($data);
+
+            // Kirim ke GitHub
+            $githubData = [
+                'title' => $ticket->name,
+                'body' => strip_tags($ticket->content),
+                'assignees' => $ticket->responsible?->github_username ? [$ticket->responsible->github_username] : [],
+                'labels' => ['helpdesk', $ticket->type->name ?? 'default'],
+            ];
+
+            $github = app(\App\Services\GithubService::class);
+            $response = $github->createIssue($githubData);
+
+            Log::info("GitHub Issue Created", [
+                'html_url' => $response['html_url'],
+                'number' => $response['number'],
+                'id' => $response['id'], // DB ID (salah)
+                'node_id' => $response['node_id'], // ✅ Ini yang benar
+            ]);
+
+            if ($response) {
+                // Update field tambahan tanpa save ulang form
+                $ticket->github_issue_url = $response['html_url'] ?? null;
+                $ticket->github_issue_number = $response['number'] ?? null;
+                $ticket->save();
+
+                if (!empty($response['node_id'])) {
+                    Log::info('Adding to project with contentId:', ['contentId' => $response['node_id']]);
+                    $github->addToProject($response['node_id']);
+                }
+            }
+
+            return $ticket;
+        } catch (\Exception $e) {
+            Log::error('Error creating GitHub issue: ' . $e->getMessage());
+            throw $e; // atau abaikan, tergantung kebutuhan
+        }
+    }
+
+    // protected function handleRecordCreation(array $data): Ticket
+    // {
+    //     // Debugging
+    //     dd($data); // atau
+    //     \Illuminate\Support\Facades\Log::info('Data Tiket adalah:', $data);
+
+    //     return Ticket::create($data);
+    // }
+}

@@ -35,6 +35,10 @@ return [
         'client_id' => env('GITHUB_ID'),
         'client_secret' => env('GITHUB_SECRET'),
         'redirect' => env('GITHUB_URL'),
+        'token' => env('GITHUB_TOKEN'), // mulai
+        'owner' => env('GITHUB_OWNER'),
+        'repo' => env('GITHUB_REPO'),
+        'project_id' => env('GITHUB_PROJECT_ID'),
     ],
 
     'google' => [
@@ -71,5 +75,4 @@ return [
         'bot_token_telegram' => env('TELEGRAM_BOT_TOKEN'),
         'group_id_telegram' => env('TELEGRAM_GROUP_ID'),
     ],
-
 ];
