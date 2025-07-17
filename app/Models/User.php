@@ -45,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser
         'oidc_username',
         'email_verified_at',
         'telegram_id',
+        'github_username',
     ];
 
     /**
