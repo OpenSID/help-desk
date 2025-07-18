@@ -108,51 +108,102 @@ class CreateTicket extends CreateRecord
     protected function handleRecordCreation(array $data): Ticket
     {
         try {
+            // Buat tiket di database
             $ticket = parent::handleRecordCreation($data);
 
-            // Kirim ke GitHub
+            // Persiapkan data untuk GitHub
             $githubData = [
                 'title' => $ticket->name,
                 'body' => strip_tags($ticket->content),
                 'assignees' => $ticket->responsible?->github_username ? [$ticket->responsible->github_username] : [],
-                'labels' => ['helpdesk', $ticket->type->name ?? 'default'],
+                'labels' => [
+                    'Helpdesk',
+                    'type:' . ($ticket->type?->name ?? 'default'),
+                    'status:' . ($ticket->status?->name ?? 'unknown'),
+                ],
             ];
 
+            // Inisialisasi GitHubService
             $github = app(\App\Services\GithubService::class);
+
+            // Langkah 1: Buat issue di GitHub
             $response = $github->createIssue($githubData);
 
-            Log::info("GitHub Issue Created", [
-                'html_url' => $response['html_url'],
-                'number' => $response['number'],
-                'id' => $response['id'], // DB ID (salah)
-                'node_id' => $response['node_id'], // ✅ Ini yang benar
-            ]);
-
-            if ($response) {
-                // Update field tambahan tanpa save ulang form
-                $ticket->github_issue_url = $response['html_url'] ?? null;
-                $ticket->github_issue_number = $response['number'] ?? null;
-                $ticket->save();
-
-                if (!empty($response['node_id'])) {
-                    Log::info('Adding to project with contentId:', ['contentId' => $response['node_id']]);
-                    $github->addToProject($response['node_id']);
-                }
+            if (!$response) {
+                Log::error('Failed to create GitHub issue', ['ticket_id' => $ticket->id]);
+                return $ticket; // Lanjutkan meskipun gagal, tapi tanpa data GitHub
             }
+
+            // Simpan info GitHub ke database
+            $ticket->github_issue_url = $response['html_url'] ?? null;
+            $ticket->github_issue_number = $response['number'] ?? null;
+
+            // Langkah 2: Tambahkan issue ke project board
+            $projectItemId = null;
+            if (!empty($response['node_id'])) {
+                $projectItemId = $github->addToProject($response['node_id']);
+                $ticket->github_project_item_id = $projectItemId;
+            } else {
+                Log::error('Missing node_id for adding to project', ['ticket_id' => $ticket->id]);
+            }
+
+            // Langkah 3: Update field custom seperti Status dan Ticket Authors
+            if ($projectItemId) {
+                $statusFieldId = $github->getProjectFieldId('Status');
+                $ticketAuthorFieldId = $github->getProjectFieldId('Ticket Authors');
+
+                $fieldValues = [];
+
+                if ($statusFieldId) {
+                    $statusOptionId = $github->getSingleSelectOptionId($statusFieldId, $ticket->status?->name ?? 'unknown');
+                    if ($statusOptionId) {
+                        $fieldValues[] = [
+                            'fieldId' => $statusFieldId,
+                            'value' => ['singleSelectOptionId' => $statusOptionId],
+                        ];
+                    } else {
+                        Log::warning('Status option not found', [
+                            'status' => $ticket->status?->name ?? 'unknown',
+                            'ticket_id' => $ticket->id,
+                        ]);
+                    }
+                } else {
+                    Log::warning('Status field ID not found', ['ticket_id' => $ticket->id]);
+                }
+
+                if ($ticketAuthorFieldId) {
+                    $authorOptionId = $github->getSingleSelectOptionId($ticketAuthorFieldId, $ticket->owner?->name ?? 'unknown');
+                    if ($authorOptionId) {
+                        $fieldValues[] = [
+                            'fieldId' => $ticketAuthorFieldId,
+                            'value' => ['singleSelectOptionId' => $authorOptionId],
+                        ];
+                    } else {
+                        Log::warning('Author option not found', [
+                            'author' => $ticket->owner?->name ?? 'unknown',
+                            'ticket_id' => $ticket->id,
+                        ]);
+                    }
+                } else {
+                    Log::warning('Ticket Authors field ID not found', ['ticket_id' => $ticket->id]);
+                }
+
+                if (!empty($fieldValues)) {
+                    // Update field custom
+                    $github->updateProjectFields($projectItemId, $fieldValues);
+                }
+            } else {
+                Log::warning('Project item ID not found, skipping field updates', ['ticket_id' => $ticket->id]);
+            }
+
+            // Simpan perubahan ke database
+            $ticket->save();
 
             return $ticket;
         } catch (\Exception $e) {
-            Log::error('Error creating GitHub issue: ' . $e->getMessage());
-            throw $e; // atau abaikan, tergantung kebutuhan
+            Log::error('Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id]);
+            throw $e;
         }
     }
 
-    // protected function handleRecordCreation(array $data): Ticket
-    // {
-    //     // Debugging
-    //     dd($data); // atau
-    //     \Illuminate\Support\Facades\Log::info('Data Tiket adalah:', $data);
-
-    //     return Ticket::create($data);
-    // }
 }
