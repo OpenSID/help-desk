@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use DOMDocument;
 use GuzzleHttp\Client;
 use GuzzleHttp\Promise;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use League\HTMLToMarkdown\HtmlConverter;
 
 class GithubService
 {
+    // protected $client;
     protected $client;
     protected $token;
     protected $owner;
@@ -23,6 +26,9 @@ class GithubService
         'review' => '98236657',
         'target' => '88395b12',
     ];
+
+    // Warna default jika tidak ada warna dari model
+    protected const DEFAULT_COLOR = 'D3D3D3'; // Abu-abu
 
     public function __construct()
     {
@@ -48,36 +54,136 @@ class GithubService
      */
     public function createIssue(array $data)
     {
-        $promises = [];
+        $retries = 0;
+        $maxRetries = 3;
 
-        // Membuat issue menggunakan REST API
-        $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
-            'json' => [
-                'title' => $data['title'],
-                'body' => $data['body'],
-                'assignees' => $data['assignees'] ?? [],
-                'labels' => $data['labels'] ?? [],
-            ],
-        ]);
+        while ($retries < $maxRetries) {
+            try {
+                $promises = [];
+                $labels = $data['labels'] ?? [];
+                $labelColors = $data['label_colors'] ?? [];
 
-        try {
-            $responses = Promise\Utils::settle($promises)->wait();
-            $issueResponse = $responses['createIssue'];
+                foreach ($labels as $label) {
+                    $color = $labelColors[$label] ?? self::DEFAULT_COLOR;
+                    $description = "Label untuk $label";
+                    $this->createLabel($label, $description, $color);
+                }
 
-            if ($issueResponse['state'] === 'fulfilled') {
-                $issueData = json_decode($issueResponse['value']->getBody(), true);
-                $issueData['node_id'] = $this->getIssueNodeId($issueData['number']);
-                return $issueData;
-            } else {
+                $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
+                    'json' => [
+                        'title' => $data['title'],
+                        'body' => $data['body'],
+                        'assignees' => $data['assignees'] ?? [],
+                        'labels' => $labels,
+                    ],
+                ]);
+
+                $responses = Promise\Utils::settle($promises)->wait();
+                $issueResponse = $responses['createIssue'];
+
+                if ($issueResponse['state'] === 'fulfilled') {
+                    $issueData = json_decode($issueResponse['value']->getBody(), true);
+                    $issueData['node_id'] = $this->getIssueNodeId($issueData['number']);
+                    return $issueData;
+                }
+
                 Log::error('Failed to create issue', [
                     'reason' => $issueResponse['reason'],
+                    'ticket_id' => $data['ticket_id'] ?? 'unknown',
                 ]);
+                return null;
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                if (in_array($e->getResponse()->getStatusCode(), [429, 403])) {
+                    $retryAfter = $e->getResponse()->getHeader('Retry-After')[0] ?? (2 ** $retries + rand(0, 100) / 100);
+                    sleep($retryAfter);
+                    $retries++;
+                } else {
+                    Log::error('Error creating issue', [
+                        'error' => $e->getMessage(),
+                        'ticket_id' => $data['ticket_id'] ?? 'unknown',
+                    ]);
+                    return null;
+                }
             }
-        } catch (\Exception $e) {
-            Log::error('Error creating issue', ['error' => $e->getMessage()]);
         }
-
+        Log::error('Failed to create issue after retries', ['ticket_id' => $data['ticket_id'] ?? 'unknown']);
         return null;
+    }
+
+    /**
+     * Membuat label baru di repositori jika belum ada.
+     *
+     * @param string $name
+     * @param string $description
+     * @param string $color
+     * @return bool
+     */
+    public function createLabel(string $name, string $description, string $color)
+    {
+        try {
+            $response = $this->client->post("repos/{$this->owner}/{$this->repo}/labels", [
+                'json' => [
+                    'name' => $name,
+                    'description' => $description,
+                    'color' => ltrim($color, '#'), // Hapus # dari kode hex
+                ],
+            ]);
+
+            if ($response->getStatusCode() === 201) {
+                return true;
+            }
+
+            Log::warning('Failed to create label', [
+                'name' => $name,
+                'status' => $response->getStatusCode(),
+                'body' => json_decode($response->getBody(), true),
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            // Label mungkin sudah ada
+            if ($e->getCode() === 422) {
+                // Perbarui warna label jika sudah ada
+                $this->updateLabel($name, $description, $color);
+                return true;
+            }
+            Log::error('Error creating label', ['name' => $name, 'error' => $e->getMessage()]);
+            return false;
+        }
+    }
+
+    /**
+     * Memperbarui label yang sudah ada di repositori.
+     *
+     * @param string $name
+     * @param string $description
+     * @param string $color
+     * @return bool
+     */
+    public function updateLabel(string $name, string $description, string $color)
+    {
+        try {
+            $response = $this->client->patch("repos/{$this->owner}/{$this->repo}/labels/{$name}", [
+                'json' => [
+                    'name' => $name,
+                    'description' => $description,
+                    'color' => ltrim($color, '#'),
+                ],
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                return true;
+            }
+
+            Log::warning('Failed to update label', [
+                'name' => $name,
+                'status' => $response->getStatusCode(),
+                'body' => json_decode($response->getBody(), true),
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Error updating label', ['name' => $name, 'error' => $e->getMessage()]);
+            return false;
+        }
     }
 
     /**

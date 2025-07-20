@@ -111,97 +111,58 @@ class CreateTicket extends CreateRecord
             // Buat tiket di database
             $ticket = parent::handleRecordCreation($data);
 
+            // Bersihkan HTML: ganti <br> berturut-turut dengan satu <br>
+            $cleanedHtml = preg_replace('/<br\s*\/?>\s*<br\s*\/?>/i', '<br>', $ticket->content ?? '');
+
+            // Konversi HTML ke Markdown
+            $converter = new \League\HTMLToMarkdown\HtmlConverter([
+                'use_experimental_html_parser' => true
+            ]);
+            $markdownContent = $converter->convert($cleanedHtml);
+
+            // Hilangkan backslash dari URL (misal: \_ menjadi _)
+            $markdownContent = str_replace(['\_', '\*', '\[', '\]'], ['_', '*', '[', ']'], $markdownContent);
+
             // Persiapkan data untuk GitHub
-            $githubData = [
-                'title' => $ticket->name,
-                'body' => strip_tags($ticket->content),
-                'assignees' => $ticket->responsible?->github_username ? [$ticket->responsible->github_username] : [],
-                'labels' => [
-                    'Helpdesk',
-                    'type:' . ($ticket->type?->name ?? 'default'),
-                    'status:' . ($ticket->status?->name ?? 'unknown'),
-                ],
+            $labels = [
+                'Helpdesk',
+                $ticket->type?->name,
+                $ticket->status?->name,
+                $ticket->project?->name,
             ];
 
-            // Inisialisasi GitHubService
-            $github = app(\App\Services\GithubService::class);
+            $labelColors = [
+                'Helpdesk' => '0000FF', // Biru untuk label Helpdesk
+                $ticket->type?->name => $ticket->type?->color ?? 'D3D3D3',
+                $ticket->status?->name => $ticket->status?->color ?? 'D3D3D3',
+                $ticket->project?->name => 'D3D3D3',
+            ];
 
-            // Langkah 1: Buat issue di GitHub
-            $response = $github->createIssue($githubData);
 
-            if (!$response) {
-                Log::error('Failed to create GitHub issue', ['ticket_id' => $ticket->id]);
-                return $ticket; // Lanjutkan meskipun gagal, tapi tanpa data GitHub
-            }
+            $githubData = [
+                'title' => $ticket->name,
+                'body' => $markdownContent,
+                'assignees' => $ticket->responsible?->github_username ? [$ticket->responsible->github_username] : [],
+                'labels' => $labels,
+                'label_colors' => $labelColors,
+                'ticket_id' => $ticket->id, // Pastikan ini ada
+            ];
 
-            // Simpan info GitHub ke database
-            $ticket->github_issue_url = $response['html_url'] ?? null;
-            $ticket->github_issue_number = $response['number'] ?? null;
+            // Log data untuk debugging
+            Log::info('Dispatching ProcessGitHubTicket job', [
+                'ticket_id' => $ticket->id,
+                'github_data' => $githubData,
+            ]);
 
-            // Langkah 2: Tambahkan issue ke project board
-            $projectItemId = null;
-            if (!empty($response['node_id'])) {
-                $projectItemId = $github->addToProject($response['node_id']);
-                $ticket->github_project_item_id = $projectItemId;
-            } else {
-                Log::error('Missing node_id for adding to project', ['ticket_id' => $ticket->id]);
-            }
-
-            // Langkah 3: Update field custom seperti Status dan Ticket Authors
-            if ($projectItemId) {
-                $statusFieldId = $github->getProjectFieldId('Status');
-                $ticketAuthorFieldId = $github->getProjectFieldId('Ticket Authors');
-
-                $fieldValues = [];
-
-                if ($statusFieldId) {
-                    $statusOptionId = $github->getSingleSelectOptionId($statusFieldId, $ticket->status?->name ?? 'unknown');
-                    if ($statusOptionId) {
-                        $fieldValues[] = [
-                            'fieldId' => $statusFieldId,
-                            'value' => ['singleSelectOptionId' => $statusOptionId],
-                        ];
-                    } else {
-                        Log::warning('Status option not found', [
-                            'status' => $ticket->status?->name ?? 'unknown',
-                            'ticket_id' => $ticket->id,
-                        ]);
-                    }
-                } else {
-                    Log::warning('Status field ID not found', ['ticket_id' => $ticket->id]);
-                }
-
-                if ($ticketAuthorFieldId) {
-                    $authorOptionId = $github->getSingleSelectOptionId($ticketAuthorFieldId, $ticket->owner?->name ?? 'unknown');
-                    if ($authorOptionId) {
-                        $fieldValues[] = [
-                            'fieldId' => $ticketAuthorFieldId,
-                            'value' => ['singleSelectOptionId' => $authorOptionId],
-                        ];
-                    } else {
-                        Log::warning('Author option not found', [
-                            'author' => $ticket->owner?->name ?? 'unknown',
-                            'ticket_id' => $ticket->id,
-                        ]);
-                    }
-                } else {
-                    Log::warning('Ticket Authors field ID not found', ['ticket_id' => $ticket->id]);
-                }
-
-                if (!empty($fieldValues)) {
-                    // Update field custom
-                    $github->updateProjectFields($projectItemId, $fieldValues);
-                }
-            } else {
-                Log::warning('Project item ID not found, skipping field updates', ['ticket_id' => $ticket->id]);
-            }
+            // Dispatch ke queue untuk menghindari rate limit
+            \App\Jobs\ProcessGitHubTicket::dispatch('create', $githubData)->onQueue('github');
 
             // Simpan perubahan ke database
             $ticket->save();
 
             return $ticket;
         } catch (\Exception $e) {
-            Log::error('Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id]);
+            Log::error('Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id ?? 'unknown']);
             throw $e;
         }
     }
