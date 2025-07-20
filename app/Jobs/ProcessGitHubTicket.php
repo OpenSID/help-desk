@@ -98,6 +98,66 @@ class ProcessGitHubTicket implements ShouldQueue
             }
 
             $ticket->save();
+        } elseif ($this->action === 'update') {
+            if (empty($this->data['issue_number'])) {
+                Log::error('Cannot update GitHub issue: Missing issue_number', ['ticket_id' => $ticketId]);
+                return;
+            }
+
+            $response = $github->updateIssue($this->data);
+
+            if (!$response) {
+                Log::error('Failed to update GitHub issue', ['ticket_id' => $ticketId, 'issue_number' => $this->data['issue_number']]);
+                return;
+            }
+
+            $ticket = \App\Models\Ticket::find($ticketId);
+            if (!$ticket) {
+                Log::error('Ticket not found in database', ['ticket_id' => $ticketId]);
+                return;
+            }
+
+            // Perbarui field proyek jika project_item_id tersedia
+            if (!empty($this->data['project_item_id'])) {
+                $statusFieldId = $github->getProjectFieldId('Status');
+                $ticketAuthorFieldId = $github->getProjectFieldId('Ticket Authors');
+                $fieldValues = [];
+
+                if ($statusFieldId) {
+                    $statusOptionId = $github->getSingleSelectOptionId($statusFieldId, $ticket->status?->name ?? 'unknown');
+                    if ($statusOptionId) {
+                        $fieldValues[] = [
+                            'fieldId' => $statusFieldId,
+                            'value' => ['singleSelectOptionId' => $statusOptionId],
+                        ];
+                    }
+                }
+
+                if ($ticketAuthorFieldId) {
+                    $authorName = $ticket->owner?->name ?? 'unknown';
+                    $authorOptionId = $github->getSingleSelectOptionId($ticketAuthorFieldId, $authorName);
+                    if ($authorOptionId) {
+                        $fieldValues[] = [
+                            'fieldId' => $ticketAuthorFieldId,
+                            'value' => ['singleSelectOptionId' => $authorOptionId],
+                        ];
+                    } else {
+                        Log::warning('Author option not found, please add to project', [
+                            'author' => $authorName,
+                            'ticket_id' => $ticketId,
+                            'action' => 'Add this author to the "Ticket Authors" field in the GitHub project manually.',
+                        ]);
+                    }
+                }
+
+                if (!empty($fieldValues)) {
+                    $github->updateProjectFields($this->data['project_item_id'], $fieldValues);
+                }
+            } else {
+                Log::warning('Missing project_item_id for updating project fields', ['ticket_id' => $ticketId]);
+            }
+
+            $ticket->save();
         }
     }
 }

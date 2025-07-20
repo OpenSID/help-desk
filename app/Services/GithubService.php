@@ -486,35 +486,66 @@ class GithubService
         return false;
     }
 
-    /**
-     * Memperbarui issue di GitHub.
-     *
-     * @param int $issueNumber
-     * @param array $data
-     * @return bool
-     */
-    public function updateIssue(int $issueNumber, array $data)
+    public function updateIssue(array $data): ?array
     {
-        $promise = $this->client->patchAsync("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
-            'json' => $data,
-        ]);
+        $retries = 0;
+        $maxRetries = 3;
+        $issueNumber = $data['issue_number'] ?? null;
+        $ticketId = $data['ticket_id'] ?? 'unknown';
 
-        try {
-            $response = Promise\Utils::unwrap([$promise])[$promise];
-            if ($response->getStatusCode() === 200) {
-                return true;
-            }
-
-            Log::error('Failed to update issue', [
-                'issue_number' => $issueNumber,
-                'status' => $response->getStatusCode(),
-                'body' => json_decode($response->getBody(), true),
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error updating issue', ['error' => $e->getMessage()]);
+        if (!$issueNumber) {
+            Log::error('Cannot update issue: Missing issue_number', ['ticket_id' => $ticketId]);
+            return null;
         }
 
-        return false;
+        while ($retries < $maxRetries) {
+            try {
+                // Perbarui label jika diperlukan
+                $labels = $data['labels'] ?? [];
+                $labelColors = $data['label_colors'] ?? [];
+                foreach ($labels as $label) {
+                    $color = $labelColors[$label] ?? self::DEFAULT_COLOR;
+                    $description = "Label untuk $label";
+                    $this->createLabel($label, $description, $color);
+                }
+
+                // Kirim permintaan PATCH untuk memperbarui issue
+                $response = $this->client->patch("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
+                    'json' => [
+                        'title' => $data['title'],
+                        'body' => $data['body'],
+                        'assignees' => $data['assignees'] ?? [],
+                        'labels' => $labels,
+                    ],
+                ]);
+
+                $issueData = json_decode($response->getBody(), true);
+                Log::info('GitHub issue updated successfully', [
+                    'ticket_id' => $ticketId,
+                    'issue_number' => $issueNumber,
+                ]);
+                return $issueData;
+            } catch (\GuzzleHttp\Exception\RequestException $e) {
+                if (in_array($e->getResponse()->getStatusCode(), [429, 403])) {
+                    $retryAfter = $e->getResponse()->getHeader('Retry-After')[0] ?? (2 ** $retries + rand(0, 100) / 100);
+                    sleep($retryAfter);
+                    $retries++;
+                } else {
+                    Log::error('Error updating GitHub issue', [
+                        'ticket_id' => $ticketId,
+                        'issue_number' => $issueNumber,
+                        'error' => $e->getMessage(),
+                    ]);
+                    return null;
+                }
+            }
+        }
+
+        Log::error('Failed to update GitHub issue after retries', [
+            'ticket_id' => $ticketId,
+            'issue_number' => $issueNumber,
+        ]);
+        return null;
     }
 
     /**
