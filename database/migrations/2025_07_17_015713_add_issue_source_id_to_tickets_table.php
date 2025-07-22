@@ -16,9 +16,9 @@ return new class extends Migration
         Schema::table('tickets', function (Blueprint $table) {
             $table->unsignedBigInteger('issue_source_id')->nullable();
             $table->foreign('issue_source_id')
-              ->references('id')
-              ->on('issue_sources')
-              ->onDelete('cascade');
+                ->references('id')
+                ->on('issue_sources')
+                ->onDelete('cascade');
         });
     }
 
@@ -30,7 +30,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('tickets', function (Blueprint $table) {
-            //
+            $table->dropForeign(['issue_source_id']);
         });
     }
 };
