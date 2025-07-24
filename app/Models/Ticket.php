@@ -234,6 +234,6 @@ class Ticket extends Model implements HasMedia
 
     public function milestone(): BelongsTo
     {
-        return $this->belongsTo(Milestone::class, 'milestone_id', 'id');
+        return $this->belongsTo(Milestone::class, 'milestone_id');
     }
 }
