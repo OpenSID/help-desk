@@ -236,7 +236,7 @@ class TicketResource extends Resource
 
                                                 return $activeMilestone?->id;
                                             })
-                                            ->required(),
+                                            ,
                                     ]),
                             ]),
 
