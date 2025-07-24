@@ -36,22 +36,27 @@
                 </span>
             </div>
             <div class="w-full flex items-center gap-2">
-                {{-- Status, Prioritas, Tipe --}}
+                @if($record->status)
                 <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
-                     style="background-color: {{ $record->status->color }};">
-                    {{ $record->status->name }}
+                     style="background-color: {{ $record->status->color ?? '#6b7280' }};">
+                    {{ $record->status->name ?? 'Unknown' }}
                 </div>
+                @endif
+                @if($record->priority)
                 <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
-                     style="background-color: {{ $record->priority->color }};">
-                    {{ $record->priority->name }}
+                     style="background-color: {{ $record->priority->color ?? '#6b7280' }};">
+                    {{ $record->priority->name ?? 'Unknown' }}
                 </div>
+                @endif
+                @if($record->type)
                 <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
-                     style="background-color: {{ $record->type->color }};">
-                    <x-icon class="h-3 text-white" name="{{ $record->type->icon }}"/>
+                     style="background-color: {{ $record->type->color ?? '#6b7280' }};">
+                    <x-icon class="h-3 text-white" name="{{ $record->type->icon ?? 'heroicon-o-tag' }}"/>
                     <span class="ml-2">
-                        {{ $record->type->name }}
+                        {{ $record->type->name ?? 'Unknown' }}
                     </span>
                 </div>
+                @endif
             </div>
             <div class="w-full flex flex-col gap-0 pt-5">
                 {{-- Konten tiket --}}
@@ -162,6 +167,24 @@
                 @endif
             </div>
 
+            <div class="space-y-1">
+                <span class="text-gray-500 text-sm font-medium">
+                    {{ __('Issue Source') }}
+                </span>
+                @if($record->issueSource)
+                    <div class="flex flex-wrap gap-1">
+                        <span
+                            class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                            style="background-color: {{ $record->issueSource->color }}; color: white;"
+                        >
+                            {{ $record->issueSource->name }}
+                        </span>
+                    </div>
+                @else
+                    <p class="text-sm text-gray-400">-</p>
+                @endif
+            </div>
+
             {{-- Estimasi waktu --}}
             <div class="w-full flex flex-col gap-1 pt-3">
                 <span class="text-gray-500 text-sm font-medium">
@@ -227,6 +250,25 @@
                         {{ '-' }}
                     @endif
                 </div>
+            </div>
+
+            {{-- Milestone --}}
+            <div class="space-y-1">
+                <span class="text-gray-500 text-sm font-medium">
+                    {{ __('Milestone') }}
+                </span>
+                @if ($record->milestone)
+                    <div class="flex flex-wrap gap-1">
+                        <span
+                            class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                            style="background-color: {{ e($record->milestone->color) }}; color: white;"
+                        >
+                            {{ $record->milestone->name }}
+                        </span>
+                    </div>
+                @else
+                    <p class="text-sm text-gray-400">-</p>
+                @endif
             </div>
 
             {{-- Tanggal pembuatan --}}
@@ -372,10 +414,10 @@
                                     ({{ $activity->created_at->diffForHumans() }})
                                 </span>
                                 <div class="w-full flex items-center gap-10">
-                                    <span class="text-gray-400">{{ $activity->oldStatus->name }}</span>
+                                    <span class="text-gray-400">{{ $activity->oldStatus->name ?? 'Unknown' }}</span>
                                     <x-heroicon-o-arrow-right class="w-6 h-6"/>
-                                    <span style="color: {{ $activity->newStatus->color }}">
-                                        {{ $activity->newStatus->name }}
+                                    <span style="color: {{ $activity->newStatus->color ?? '#6b7280' }}">
+                                        {{ $activity->newStatus->name ?? 'Unknown' }}
                                     </span>
                                 </div>
                             </div>

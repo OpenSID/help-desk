@@ -62,7 +62,7 @@ return [
     |
     */
 
-    'home_url' => '/',
+    'home_url' => '/dashboard',
 
     /*
     |--------------------------------------------------------------------------
@@ -107,7 +107,7 @@ return [
         'namespace' => 'App\\Filament\\Pages',
         'path' => app_path('Filament/Pages'),
         'register' => [
-            Pages\Dashboard::class,
+            // Pages\Dashboard::class,
         ],
     ],
 
