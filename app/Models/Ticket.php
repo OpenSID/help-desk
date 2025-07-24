@@ -22,7 +22,8 @@ class Ticket extends Model implements HasMedia
     protected $fillable = [
         'name', 'content', 'owner_id', 'responsible_id',
         'status_id', 'project_id', 'code', 'order', 'type_id',
-        'priority_id', 'estimation', 'epic_id', 'sprint_id','master_application_id'
+        'priority_id', 'estimation', 'epic_id', 'sprint_id', 'master_application_id', 'milestone_id',
+        'issue_source_id'
     ];
 
     public static function boot()
@@ -230,5 +231,15 @@ class Ticket extends Model implements HasMedia
     public function categories()
     {
         return $this->belongsToMany(TicketCategory::class, 'ticket_categories_pivot');
+    }
+
+    public function milestone(): BelongsTo
+    {
+        return $this->belongsTo(Milestone::class, 'milestone_id');
+    }
+
+    public function issueSource()
+    {
+        return $this->belongsTo(issueSource::class);
     }
 }

@@ -11,16 +11,22 @@ use App\Filament\Widgets\TicketsByPriority;
 use App\Filament\Widgets\TicketsByType;
 use App\Filament\Widgets\TicketTimeLogged;
 use App\Filament\Widgets\UserTimeLogged;
-use Filament\Pages\Dashboard as BasePage;
+use Filament\Pages\Page;
 
-class Dashboard extends BasePage
+
+class Dashboard extends Page
 {
-    protected static bool $shouldRegisterNavigation = false;
+    public static ?string $route = '/dashboard';
+    public static ?string $routeName = 'filament.pages.dashboard'; // Tambahkan baris ini
 
-    protected function getColumns(): int | array
+    // protected static bool $shouldRegisterNavigation = false;
+    protected static string $view = 'filament::pages.dashboard';
+
+    protected function getColumns(): int
     {
         return 6;
     }
+ 
 
     protected function getWidgets(): array
     {

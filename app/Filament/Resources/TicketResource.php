@@ -21,6 +21,9 @@ use Filament\Tables;
 use Illuminate\Support\HtmlString;
 use App\Models\MasterApplication;
 use App\Models\TicketCategory;
+use App\Models\Milestone;
+use Carbon\Carbon;
+use App\Models\IssueSource;
 
 class TicketResource extends Resource
 {
@@ -163,6 +166,12 @@ class TicketResource extends Resource
                                     ->options(fn () => TicketCategory::pluck('name', 'id')->toArray())
                                     ->preload()
                                     ->searchable(),
+
+                                Forms\Components\Select::make('issue_source_id')
+                                    ->label(__('Issue Source'))
+                                    ->searchable()
+                                    ->options(fn() => IssueSource::all()->pluck('name', 'id')->toArray()),
+
                                 // Grid untuk status, tipe, prioritas
                                 Forms\Components\Grid::make()
                                     ->columns(3)
@@ -215,6 +224,26 @@ class TicketResource extends Resource
                                             ->options(fn() => TicketPriority::all()->pluck('name', 'id')->toArray())
                                             ->default(fn() => TicketPriority::where('is_default', true)->first()?->id)
                                             ->required(),
+                                        // Pilihan milestone tiket
+                                        Forms\Components\Select::make('milestone_id')
+                                            ->label(__('Milestone'))
+                                            ->searchable()
+                                            ->options(fn () =>
+                                                Milestone::where('access_status', 'Open') // ✅ hanya yang open
+                                                    ->pluck('name', 'id')
+                                                    ->toArray()
+                                            )
+                                            ->default(function () {
+                                                $today = Carbon::today();
+
+                                                $activeMilestone = Milestone::where('access_status', 'Open') // ✅ hanya milestone open
+                                                    ->whereDate('start_date', '<=', $today)
+                                                    ->whereDate('end_date', '>=', $today)
+                                                    ->first();
+
+                                                return $activeMilestone?->id;
+                                            })
+                                            ,
                                     ]),
                             ]),
 
@@ -343,7 +372,7 @@ class TicketResource extends Resource
                 ->searchable(),
 
             Tables\Columns\TextColumn::make('masterApplication.name')
-                ->label(__('Application'))
+                ->label(__('Master Application'))
                 ->formatStateUsing(function ($record) {
                     if (!$record->masterApplication) {
                         return '-'; // atau bisa diganti teks lain seperti "Tidak ada aplikasi"
@@ -351,7 +380,7 @@ class TicketResource extends Resource
 
                     return view('partials.filament.resources.master-application', ['state' => $record->masterApplication]);
                 })
-                ->sortable()
+                ->sortable(false)
                 ->searchable(),
 
             // Kolom kategori
@@ -361,6 +390,18 @@ class TicketResource extends Resource
                     fn($record) => view('partials.filament.resources.ticket-category', ['state' => $record->categories])
                 )
                 ->sortable(false)
+                ->searchable(),
+
+            // kolom sumber masalah
+            Tables\Columns\TextColumn::make('IssueSource.name')
+                ->label(__('Issue Source'))
+                ->formatStateUsing(function ($record) {
+                    if (!$record->issueSource) {
+                        return '-'; // atau bisa diganti teks lain seperti "Tidak ada aplikasi"
+                    }
+
+                    return view('partials.filament.resources.issue-source', ['state' => $record->issueSource]);
+                })
                 ->searchable(),
 
             // Kolom prioritas
@@ -375,6 +416,16 @@ class TicketResource extends Resource
                         '))
                 ->sortable()
                 ->searchable(),
+
+            // Kolom milestone
+            Tables\Columns\TextColumn::make('milestone.name')
+                ->label(__('Milestone'))
+                ->formatStateUsing(
+                    fn($record) => view('partials.filament.resources.milestone', ['state' => $record->milestone])
+                )
+                ->sortable()
+                ->searchable(),
+
 
             // Kolom tanggal dibuat
             Tables\Columns\TextColumn::make('created_at')
@@ -430,6 +481,12 @@ class TicketResource extends Resource
                     ->multiple()
                     ->options(fn() => TicketType::all()->pluck('name', 'id')->toArray()),
 
+                // Filter masteraplikasi
+                Tables\Filters\SelectFilter::make('master_application_id')
+                    ->label(__('Master Application'))
+                    ->multiple()
+                    ->options(fn() => MasterApplication::all()->pluck('name', 'id')->toArray()),
+
                 // Filter kategori
                 Tables\Filters\SelectFilter::make('categories')
                     ->label(__('Categories'))
@@ -448,6 +505,18 @@ class TicketResource extends Resource
                     ->label(__('Priority'))
                     ->multiple()
                     ->options(fn() => TicketPriority::all()->pluck('name', 'id')->toArray()),
+
+                // Filter milestone
+                Tables\Filters\SelectFilter::make('milestone_id')
+                    ->label(__('Milestone'))
+                    ->multiple()
+                    ->options(fn() => Milestone::all()->pluck('name', 'id')->toArray()),
+
+                // Filter sumber masalah
+                Tables\Filters\SelectFilter::make('issue_source_id')
+                    ->label(__('Issue Source'))
+                    ->multiple()
+                    ->options(fn() => IssueSource::all()->pluck('name', 'id')->toArray()),
             ])
             ->actions([
                 // Aksi lihat dan edit
