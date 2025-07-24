@@ -55,7 +55,7 @@ class UserResource extends Resource
                                     ->email()
                                     ->required()
                                     ->rule(
-                                        fn($record) => 'unique:users,email,'
+                                        fn ($record) => 'unique:users,email,'
                                             . ($record ? $record->id : 'NULL')
                                             . ',id,deleted_at,NULL'
                                     )
@@ -63,6 +63,10 @@ class UserResource extends Resource
 
                                 Forms\Components\TextInput::make('telegram_id')
                                     ->label(__('Telegram Id'))
+                                    ->maxLength(255),
+
+                                Forms\Components\TextInput::make('github_username')
+                                    ->label(__('GitHub Username'))
                                     ->maxLength(255),
 
                                 Forms\Components\CheckboxList::make('roles')
@@ -92,7 +96,8 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('telegram_id')
                     ->label(__('Telegram id'))
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => $state ?: '-'),
 
                 Tables\Columns\TagsColumn::make('roles.name')
                     ->label(__('Roles'))
@@ -102,11 +107,18 @@ class UserResource extends Resource
                     ->label(__('Email verified at'))
                     ->dateTime()
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => $state ?: '-'),
 
                 Tables\Columns\TextColumn::make('socials')
                     ->label(__('Linked social networks'))
                     ->view('partials.filament.resources.social-icon'),
+
+                Tables\Columns\TextColumn::make('github_username')
+                    ->label(__('GitHub Username'))
+                    ->sortable()
+                    ->searchable()
+                    ->formatStateUsing(fn ($state) => $state ?: '-'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created at'))

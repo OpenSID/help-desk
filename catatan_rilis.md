@@ -7,6 +7,7 @@ Di rilis v2507.0.0 berisi penambahan fitur dan perbaikan lain sesuai dengan pela
 4. [#27](https://github.com/OpenSID/help-desk/pull/27) Fitur : Master Aplikasi
 5. [#19](https://github.com/OpenSID/help-desk/pull/19) Fitur : STatus Tiket Bisa dilihat untuk umum
 6. [#12](https://github.com/OpenSID/help-desk/issues/12) Fitur : Master Milestone
+7. [#22](https://github.com/OpenSID/help-desk/issues/22) Fitur: Menambahkan username github pada data user
 
 #### Perbaikan BUG
 
