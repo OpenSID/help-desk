@@ -115,7 +115,7 @@ class UserResource extends Resource
                     ->view('partials.filament.resources.social-icon'),
 
                 Tables\Columns\TextColumn::make('github_username')
-                    ->label(__('Github Username'))
+                    ->label(__('GitHub Username'))
                     ->sortable()
                     ->searchable()
                     ->formatStateUsing(fn ($state) => $state ?: '-'),
