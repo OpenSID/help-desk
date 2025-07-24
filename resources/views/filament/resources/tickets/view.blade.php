@@ -238,7 +238,7 @@
                     <div class="flex flex-wrap gap-1">
                         <span
                             class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
-                            style="background-color: {{ $record->milestone->color }}; color: white;"
+                            style="background-color: {{ e($record->milestone->color) }}; color: white;"
                         >
                             {{ $record->milestone->name }}
                         </span>
