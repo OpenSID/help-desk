@@ -39,6 +39,7 @@ return [
         'owner' => env('GITHUB_OWNER'),
         'repo' => env('GITHUB_REPO'),
         'project_id' => env('GITHUB_PROJECT_ID'),
+        'webhook_secret' => env('GITHUB_WEBHOOK_SECRET'),
     ],
 
     'google' => [

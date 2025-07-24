@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
-use App\Services\GitHubService;
+use App\Models\Ticket;
+use App\Models\TicketStatus;
 use Illuminate\Bus\Queueable;
+use App\Services\GitHubService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -158,6 +160,41 @@ class ProcessGitHubTicket implements ShouldQueue
             }
 
             $ticket->save();
+        } elseif ($this->action === 'close') {
+            $issueNumber = $this->data['issue_number'] ?? null;
+
+            if (!$issueNumber) {
+                Log::error('[ProcessGitHubTicket-close] Cannot process close action: Missing issue_number', ['issue_number' => $issueNumber]);
+                return;
+            }
+
+            $ticket = Ticket::with('status')->where('github_issue_number', $issueNumber)->first();
+
+            if (!$ticket) {
+                Log::warning('[ProcessGitHubTicket-close] Ticket not found for GitHub issue', [
+                    'issue_number' => $issueNumber,
+                ]);
+                return;
+            }
+
+            $doneStatus = TicketStatus::where('name', 'Done')->orWhere('name', 'Selesai')->first();
+
+            if (!$doneStatus) {
+                Log::error('[ProcessGitHubTicket-close] Done status not found in database', [
+                    'ticket_id' => $ticket->id,
+                    'issue_number' => $issueNumber,
+                ]);
+                return;
+            }
+
+            $ticket->status_id = $doneStatus->id;
+            $ticket->save();
+
+            Log::info('[ProcessGitHubTicket-close] Ticket status updated to Done', [
+                'ticket_id' => $ticket->id,
+                'issue_number' => $issueNumber,
+                'status_id' => $doneStatus->id,
+            ]);
         }
     }
 }

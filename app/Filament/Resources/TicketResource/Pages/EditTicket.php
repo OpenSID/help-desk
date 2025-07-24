@@ -49,12 +49,14 @@ class EditTicket extends EditRecord
                 'Helpdesk',
                 $this->record->type?->name ?? 'default',
                 $this->record->status?->name ?? 'unknown',
+                $this->record->project?->name ?? 'unknown',
             ];
 
             $labelColors = [
                 'Helpdesk' => '0000FF',
                 $this->record->type?->name ?? 'default' => $this->record->type?->color ?? 'D3D3D3',
                 $this->record->status?->name ?? 'unknown' => $this->record->status?->color ?? 'D3D3D3',
+                $this->record->project?->name => 'D3D3D3',
             ];
 
             $githubData = [
