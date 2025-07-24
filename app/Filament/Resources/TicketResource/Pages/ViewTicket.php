@@ -199,8 +199,9 @@ class ViewTicket extends ViewRecord implements HasForms
 
     public function editComment(int $commentId): void
     {
+        $comment = $this->record->comments->where('id', $commentId)->first();
         $this->form->fill([
-            'comment' => $this->record->comments->where('id', $commentId)->first()?->content
+            'comment' => $comment ? $comment->content : ''
         ]);
         $this->selectedCommentId = $commentId;
     }

@@ -23,6 +23,7 @@ use App\Models\MasterApplication;
 use App\Models\TicketCategory;
 use App\Models\Milestone;
 use Carbon\Carbon;
+use App\Models\IssueSource;
 
 class TicketResource extends Resource
 {
@@ -165,6 +166,12 @@ class TicketResource extends Resource
                                     ->options(fn () => TicketCategory::pluck('name', 'id')->toArray())
                                     ->preload()
                                     ->searchable(),
+
+                                Forms\Components\Select::make('issue_source_id')
+                                    ->label(__('Issue Source'))
+                                    ->searchable()
+                                    ->options(fn() => IssueSource::all()->pluck('name', 'id')->toArray()),
+
                                 // Grid untuk status, tipe, prioritas
                                 Forms\Components\Grid::make()
                                     ->columns(3)
@@ -385,6 +392,18 @@ class TicketResource extends Resource
                 ->sortable(false)
                 ->searchable(),
 
+            // kolom sumber masalah
+            Tables\Columns\TextColumn::make('IssueSource.name')
+                ->label(__('Issue Source'))
+                ->formatStateUsing(function ($record) {
+                    if (!$record->issueSource) {
+                        return '-'; // atau bisa diganti teks lain seperti "Tidak ada aplikasi"
+                    }
+
+                    return view('partials.filament.resources.issue-source', ['state' => $record->issueSource]);
+                })
+                ->searchable(),
+
             // Kolom prioritas
             Tables\Columns\TextColumn::make('priority.name')
                 ->label(__('Priority'))
@@ -492,6 +511,12 @@ class TicketResource extends Resource
                     ->label(__('Milestone'))
                     ->multiple()
                     ->options(fn() => Milestone::all()->pluck('name', 'id')->toArray()),
+
+                // Filter sumber masalah
+                Tables\Filters\SelectFilter::make('issue_source_id')
+                    ->label(__('Issue Source'))
+                    ->multiple()
+                    ->options(fn() => IssueSource::all()->pluck('name', 'id')->toArray()),
             ])
             ->actions([
                 // Aksi lihat dan edit
