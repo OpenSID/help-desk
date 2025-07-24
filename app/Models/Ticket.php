@@ -47,32 +47,6 @@ class Ticket extends Model implements HasMedia
             }
         });
 
-        // static::updating(function (Ticket $item) {
-        //     $old = Ticket::where('id', $item->id)->first();
-
-        //     // Ticket activity based on status
-        //     $oldStatus = $old->status_id;
-        //     if ($oldStatus != $item->status_id) {
-        //         TicketActivity::create([
-        //             'ticket_id' => $item->id,
-        //             'old_status_id' => $oldStatus,
-        //             'new_status_id' => $item->status_id,
-        //             'user_id' => auth()->user()->id
-        //         ]);
-        //         foreach ($item->watchers as $user) {
-        //             $user->notify(new TicketStatusUpdated($item));
-        //         }
-        //     }
-
-        //     // Ticket sprint update
-        //     $oldSprint = $old->sprint_id;
-        //     if ($oldSprint && !$item->sprint_id) {
-        //         Ticket::where('id', $item->id)->update(['epic_id' => null]);
-        //     } elseif ($item->sprint_id && $item->sprint->epic_id) {
-        //         Ticket::where('id', $item->id)->update(['epic_id' => $item->sprint->epic_id]);
-        //     }
-        // });
-
         static::updating(function (Ticket $item) {
             $old = Ticket::with('status')->where('id', $item->id)->first();
 

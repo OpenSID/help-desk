@@ -11,7 +11,6 @@ use League\HTMLToMarkdown\HtmlConverter;
 
 class GithubService
 {
-    // protected $client;
     protected $client;
     protected $token;
     protected $owner;
@@ -93,7 +92,9 @@ class GithubService
                 ]);
                 return null;
             } catch (\GuzzleHttp\Exception\RequestException $e) {
-                if (in_array($e->getResponse()->getStatusCode(), [429, 403])) {
+                $response = $e->getResponse();
+                // Cek apakah ada respons dan apakah statusnya 429 atau 403
+                if ($response && in_array($response->getStatusCode(), [429, 403])) {
                     $retryAfter = $e->getResponse()->getHeader('Retry-After')[0] ?? (2 ** $retries + rand(0, 100) / 100);
                     sleep($retryAfter);
                     $retries++;
@@ -526,7 +527,9 @@ class GithubService
                 ]);
                 return $issueData;
             } catch (\GuzzleHttp\Exception\RequestException $e) {
-                if (in_array($e->getResponse()->getStatusCode(), [429, 403])) {
+                $response = $e->getResponse();
+                // Cek apakah ada respons dan apakah statusnya 429 atau 403
+                if ($response && in_array($response->getStatusCode(), [429, 403])) {
                     $retryAfter = $e->getResponse()->getHeader('Retry-After')[0] ?? (2 ** $retries + rand(0, 100) / 100);
                     sleep($retryAfter);
                     $retries++;
@@ -548,46 +551,4 @@ class GithubService
         return null;
     }
 
-    /**
-     * Menutup issue dengan komentar.
-     *
-     * @param int $issueNumber
-     * @param string $comment
-     * @return bool
-     */
-    public function closeIssue(int $issueNumber, string $comment)
-    {
-        $promises = [];
-
-        // Tambahkan komentar
-        $promises['comment'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}/comments", [
-            'json' => ['body' => $comment],
-        ]);
-
-        // Tutup issue
-        $promises['close'] = $this->client->patchAsync("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
-            'json' => ['state' => 'closed'],
-        ]);
-
-        try {
-            $responses = Promise\Utils::settle($promises)->wait();
-            $success = true;
-
-            foreach ($responses as $key => $response) {
-                if ($response['state'] !== 'fulfilled' || $response['value']->getStatusCode() !== 200) {
-                    Log::error("Failed to {$key} issue", [
-                        'issue_number' => $issueNumber,
-                        'status' => $response['value']->getStatusCode(),
-                        'body' => json_decode($response['value']->getBody(), true),
-                    ]);
-                    $success = false;
-                }
-            }
-
-            return $success;
-        } catch (\Exception $e) {
-            Log::error('Error closing issue', ['error' => $e->getMessage()]);
-            return false;
-        }
-    }
 }
