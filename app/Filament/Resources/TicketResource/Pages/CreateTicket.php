@@ -17,6 +17,7 @@ use App\Models\Ticket;
 use Illuminate\Support\Str;
 use App\Services\TelegramService;
 use Illuminate\Support\Facades\Log;
+use League\HTMLToMarkdown\HtmlConverter;
 use App\Filament\Resources\TicketResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -111,13 +112,12 @@ class CreateTicket extends CreateRecord
             // Buat tiket di database
             $ticket = parent::handleRecordCreation($data);
 
+            // Ambil instance HtmlConverter dari container
+            $converter = app(HtmlConverter::class);
+
             // Bersihkan HTML: ganti <br> berturut-turut dengan satu <br>
             $cleanedHtml = preg_replace('/<br\s*\/?>\s*<br\s*\/?>/i', '<br>', $ticket->content ?? '');
 
-            // Konversi HTML ke Markdown
-            $converter = new \League\HTMLToMarkdown\HtmlConverter([
-                'use_experimental_html_parser' => true
-            ]);
             $markdownContent = $converter->convert($cleanedHtml);
 
             // Hilangkan backslash dari URL (misal: \_ menjadi _)
@@ -127,14 +127,12 @@ class CreateTicket extends CreateRecord
             $labels = [
                 'Helpdesk',
                 $ticket->type?->name,
-                $ticket->status?->name,
                 $ticket->project?->name,
             ];
 
             $labelColors = [
                 'Helpdesk' => '0000FF', // Biru untuk label Helpdesk
                 $ticket->type?->name => $ticket->type?->color ?? 'D3D3D3',
-                $ticket->status?->name => $ticket->status?->color ?? 'D3D3D3',
                 $ticket->project?->name => 'D3D3D3',
             ];
 
@@ -149,7 +147,7 @@ class CreateTicket extends CreateRecord
             ];
 
             // Log data untuk debugging
-            Log::info('Dispatching ProcessGitHubTicket job', [
+            Log::info('[CreateTicket] Dispatching ProcessGitHubTicket job', [
                 'ticket_id' => $ticket->id,
                 'github_data' => $githubData,
             ]);
@@ -162,7 +160,7 @@ class CreateTicket extends CreateRecord
 
             return $ticket;
         } catch (\Exception $e) {
-            Log::error('Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id ?? 'unknown']);
+            Log::error('[CreateTicket] Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id ?? 'unknown']);
             throw $e;
         }
     }

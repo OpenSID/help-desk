@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TicketResource\Pages;
 use Filament\Pages\Actions;
 use Illuminate\Support\Facades\Log;
 use Filament\Resources\Pages\EditRecord;
+use League\HTMLToMarkdown\HtmlConverter;
 use App\Filament\Resources\TicketResource;
 
 class EditTicket extends EditRecord
@@ -32,13 +33,12 @@ class EditTicket extends EditRecord
         $this->record->categories()->sync($this->data['categories'] ?? []);
 
         try {
+            // Ambil instance HtmlConverter dari container
+            $converter = app(HtmlConverter::class);
+
             // Bersihkan HTML: ganti <br> berturut-turut dengan satu <br>
             $cleanedHtml = preg_replace('/<br\s*\/?>\s*<br\s*\/?>/i', '<br>', $this->record->content ?? '');
 
-            // Konversi HTML ke Markdown
-            $converter = new \League\HTMLToMarkdown\HtmlConverter([
-                'use_experimental_html_parser' => true
-            ]);
             $markdownContent = $converter->convert($cleanedHtml);
 
             // Hilangkan backslash dari URL (misal: \_ menjadi _)
@@ -48,30 +48,28 @@ class EditTicket extends EditRecord
             $labels = [
                 'Helpdesk',
                 $this->record->type?->name ?? 'default',
-                $this->record->status?->name ?? 'unknown',
                 $this->record->project?->name ?? 'unknown',
             ];
 
             $labelColors = [
                 'Helpdesk' => '0000FF',
                 $this->record->type?->name ?? 'default' => $this->record->type?->color ?? 'D3D3D3',
-                $this->record->status?->name ?? 'unknown' => $this->record->status?->color ?? 'D3D3D3',
                 $this->record->project?->name => 'D3D3D3',
             ];
 
             $githubData = [
                 'title' => $this->record->name,
-                'body' => $markdownContent ?? '', // Sudah dalam format Markdown
+                'body' => $markdownContent ?? '', 
                 'assignees' => $this->record->responsible?->github_username ? [$this->record->responsible->github_username] : [],
                 'labels' => $labels,
                 'label_colors' => $labelColors,
                 'ticket_id' => $this->record->id,
-                'issue_number' => $this->record->github_issue_number, // Untuk memperbarui issue spesifik
-                'project_item_id' => $this->record->github_project_item_id, // Untuk memperbarui proyek
+                'issue_number' => $this->record->github_issue_number, 
+                'project_item_id' => $this->record->github_project_item_id,
             ];
 
             // Log data untuk debugging
-            Log::info('Dispatching ProcessGitHubTicket job for update', [
+            Log::info('[EditTicket] Dispatching ProcessGitHubTicket job for update', [
                 'ticket_id' => $this->record->id,
                 'github_data' => $githubData,
             ]);
@@ -79,7 +77,7 @@ class EditTicket extends EditRecord
             // Dispatch job untuk memperbarui issue dan proyek GitHub
             \App\Jobs\ProcessGitHubTicket::dispatch('update', $githubData)->onQueue('github');
         } catch (\Exception $e) {
-            Log::error('Error queuing GitHub issue update: ' . $e->getMessage(), [
+            Log::error('[EditTicket] Error queuing GitHub issue update: ' . $e->getMessage(), [
                 'ticket_id' => $this->record->id ?? 'unknown',
             ]);
             throw $e;

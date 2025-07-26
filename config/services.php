@@ -40,6 +40,12 @@ return [
         'repo' => env('GITHUB_REPO'),
         'project_id' => env('GITHUB_PROJECT_ID'),
         'webhook_secret' => env('GITHUB_WEBHOOK_SECRET'),
+        'status_options' => [ // opsi status yang sebenarnya ada di field "Status" project GitHub
+            'done' => 'Selesai',           // Nama opsi status di GitHub Project
+            'sedang_dikerjakan' => 'Sedang Dikerjakan',
+            'review' => 'Review',
+            'target' => 'Target',
+        ],
     ],
 
     'google' => [

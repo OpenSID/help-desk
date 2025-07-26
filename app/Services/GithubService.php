@@ -8,6 +8,7 @@ use GuzzleHttp\Promise;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use League\HTMLToMarkdown\HtmlConverter;
+use GuzzleHttp\Promise\Utils;
 
 class GithubService
 {
@@ -17,14 +18,6 @@ class GithubService
     protected $repo;
     protected $projectId;
     protected $statusFieldId;
-
-    // Pemetaan status tiket ke statusOptionId
-    protected const STATUS_OPTIONS = [
-        'done' => 'f75ad846',
-        'sedang_dikerjakan' => '47fc9ee4',
-        'review' => '98236657',
-        'target' => '88395b12',
-    ];
 
     // Warna default jika tidak ada warna dari model
     protected const DEFAULT_COLOR = 'D3D3D3'; // Abu-abu
@@ -53,62 +46,58 @@ class GithubService
      */
     public function createIssue(array $data)
     {
-        $retries = 0;
-        $maxRetries = 3;
+        try {
+            $promises = [];
+            $labels = $data['labels'] ?? [];
+            $labelColors = $data['label_colors'] ?? [];
 
-        while ($retries < $maxRetries) {
-            try {
-                $promises = [];
-                $labels = $data['labels'] ?? [];
-                $labelColors = $data['label_colors'] ?? [];
-
-                foreach ($labels as $label) {
-                    $color = $labelColors[$label] ?? self::DEFAULT_COLOR;
-                    $description = "Label untuk $label";
-                    $this->createLabel($label, $description, $color);
-                }
-
-                $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
-                    'json' => [
-                        'title' => $data['title'],
-                        'body' => $data['body'],
-                        'assignees' => $data['assignees'] ?? [],
-                        'labels' => $labels,
-                    ],
-                ]);
-
-                $responses = Promise\Utils::settle($promises)->wait();
-                $issueResponse = $responses['createIssue'];
-
-                if ($issueResponse['state'] === 'fulfilled') {
-                    $issueData = json_decode($issueResponse['value']->getBody(), true);
-                    $issueData['node_id'] = $this->getIssueNodeId($issueData['number']);
-                    return $issueData;
-                }
-
-                Log::error('Failed to create issue', [
-                    'reason' => $issueResponse['reason'],
-                    'ticket_id' => $data['ticket_id'] ?? 'unknown',
-                ]);
-                return null;
-            } catch (\GuzzleHttp\Exception\RequestException $e) {
-                $response = $e->getResponse();
-                // Cek apakah ada respons dan apakah statusnya 429 atau 403
-                if ($response && in_array($response->getStatusCode(), [429, 403])) {
-                    $retryAfter = $e->getResponse()->getHeader('Retry-After')[0] ?? (2 ** $retries + rand(0, 100) / 100);
-                    sleep($retryAfter);
-                    $retries++;
-                } else {
-                    Log::error('Error creating issue', [
-                        'error' => $e->getMessage(),
-                        'ticket_id' => $data['ticket_id'] ?? 'unknown',
-                    ]);
-                    return null;
-                }
+            foreach ($labels as $label) {
+                $color = $labelColors[$label] ?? self::DEFAULT_COLOR;
+                $description = "Label untuk $label";
+                $this->createLabel($label, $description, $color);
             }
+
+            $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
+                'json' => [
+                    'title' => $data['title'],
+                    'body' => $data['body'],
+                    'assignees' => $data['assignees'] ?? [],
+                    'labels' => $labels,
+                ],
+            ]);
+
+            $responses = Utils::settle($promises)->wait();
+            $issueResponse = $responses['createIssue'];
+
+            if ($issueResponse['state'] === 'fulfilled') {
+                $issueData = json_decode($issueResponse['value']->getBody(), true);
+                $issueData['node_id'] = $this->getIssueNodeId($issueData['number']);
+                return $issueData;
+            }
+
+            Log::error('Failed to create issue', [
+                'reason' => $issueResponse['reason'],
+                'ticket_id' => $data['ticket_id'] ?? 'unknown',
+            ]);
+            return null;
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $response = $e->getResponse();
+            if ($response && in_array($response->getStatusCode(), [429, 403])) {
+                $statusCode = $response->getStatusCode();
+                $message = $statusCode === 429 ? 'Rate limit exceeded' : 'Forbidden access';
+                Log::warning("GitHub API error: {$message}", [
+                    'ticket_id' => $data['ticket_id'] ?? 'unknown',
+                    'status_code' => $statusCode,
+                    'error' => $e->getMessage(),
+                ]);
+                throw $e; // Lempar ulang untuk ditangani oleh job
+            }
+            Log::error('Error creating issue', [
+                'error' => $e->getMessage(),
+                'ticket_id' => $data['ticket_id'] ?? 'unknown',
+            ]);
+            return null;
         }
-        Log::error('Failed to create issue after retries', ['ticket_id' => $data['ticket_id'] ?? 'unknown']);
-        return null;
     }
 
     /**
@@ -294,30 +283,39 @@ class GithubService
         }
         GRAPHQL;
 
-        $response = Http::withToken($this->token)
-            ->post('https://api.github.com/graphql', [
-                'query' => $query,
-                'variables' => [
-                    'projectId' => $this->projectId,
-                ],
-            ]);
+        try {
+            $response = Http::withToken($this->token)
+                ->post('https://api.github.com/graphql', [
+                    'query' => $query,
+                    'variables' => [
+                        'projectId' => $this->projectId,
+                    ],
+                ]);
 
-        if ($response->successful()) {
-            $fields = $response->json('data.node.fields.nodes');
-            foreach ($fields as $field) {
-                if ($field['name'] === $fieldName) {
-                    return $field['id'];
+            if ($response->successful()) {
+                $fields = $response->json('data.node.fields.nodes');
+                foreach ($fields as $field) {
+                    if ($field['name'] === $fieldName) {
+                        return $field['id'];
+                    }
                 }
             }
+
+            // Jika tidak berhasil atau field tidak ditemukan, log error dan lempar exception
+            Log::error('Failed to fetch project field ID', [
+                'field_name' => $fieldName,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+
+            throw new \Exception("Failed to fetch project field ID for '{$fieldName}'. Status: {$response->status()}, Details: " . json_encode($response->json()));
+        } catch (\Exception $e) {
+            Log::error('Exception in getProjectFieldId', [
+                'field_name' => $fieldName,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e; // Lempar ulang untuk ditangani oleh job
         }
-
-        Log::error('Failed to fetch project field ID', [
-            'field_name' => $fieldName,
-            'status' => $response->status(),
-            'body' => $response->json(),
-        ]);
-
-        return null;
     }
 
     /**
@@ -350,36 +348,46 @@ class GithubService
         }
         GRAPHQL;
 
-        $response = Http::withToken($this->token)
-            ->post('https://api.github.com/graphql', [
-                'query' => $query,
-                'variables' => [
-                    'projectId' => $this->projectId,
-                ],
-            ]);
+        try {
+            $response = Http::withToken($this->token)
+                ->post('https://api.github.com/graphql', [
+                    'query' => $query,
+                    'variables' => [
+                        'projectId' => $this->projectId,
+                    ],
+                ]);
 
-        if ($response->successful()) {
-            $fields = $response->json('data.node.fields.nodes') ?? [];
-            foreach ($fields as $field) {
-                // Pastikan field adalah SingleSelectField dan memiliki id serta options
-                if (isset($field['id'], $field['options']) && $field['id'] === $fieldId) {
-                    foreach ($field['options'] as $option) {
-                        if (strtolower($option['name']) === strtolower($optionName)) {
-                            return $option['id'];
+            if ($response->successful()) {
+                $fields = $response->json('data.node.fields.nodes') ?? [];
+                foreach ($fields as $field) {
+                    // Pastikan field adalah SingleSelectField dan memiliki id serta options
+                    if (isset($field['id'], $field['options']) && $field['id'] === $fieldId) {
+                        foreach ($field['options'] as $option) {
+                            if (strtolower($option['name']) === strtolower($optionName)) {
+                                return $option['id'];
+                            }
                         }
                     }
                 }
             }
+
+            // Jika tidak berhasil atau opsi tidak ditemukan, log error dan lempar exception
+            Log::error('Failed to fetch single select option ID', [
+                'field_id' => $fieldId,
+                'option_name' => $optionName,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+
+            throw new \Exception("Failed to fetch single select option ID for field '{$fieldId}' and option '{$optionName}'. Status: {$response->status()}, Details: " . json_encode($response->json()));
+        } catch (\Exception $e) {
+            Log::error('Exception in getSingleSelectOptionId', [
+                'field_id' => $fieldId,
+                'option_name' => $optionName,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e; // Lempar ulang untuk ditangani oleh job
         }
-
-        Log::error('Failed to fetch single select option ID', [
-            'field_id' => $fieldId,
-            'option_name' => $optionName,
-            'status' => $response->status(),
-            'body' => $response->json(),
-        ]);
-
-        return null;
     }
 
     /**
@@ -433,122 +441,129 @@ class GithubService
         return $success;
     }
 
+    public function updateIssue(array $data): ?array
+    {
+        $issueNumber = $data['issue_number'] ?? null;
+        $ticketId = $data['ticket_id'] ?? 'unknown';
+
+        try {
+            // Perbarui label jika diperlukan
+            $labels = $data['labels'] ?? [];
+            $labelColors = $data['label_colors'] ?? [];
+            foreach ($labels as $label) {
+                $color = $labelColors[$label] ?? self::DEFAULT_COLOR;
+                $description = "Label untuk $label";
+                $this->createLabel($label, $description, $color);
+            }
+
+            // Kirim permintaan PATCH untuk memperbarui issue
+            $response = $this->client->patch("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
+                'json' => [
+                    'title' => $data['title'],
+                    'body' => $data['body'],
+                    'assignees' => $data['assignees'] ?? [],
+                    'labels' => $labels,
+                ],
+            ]);
+
+            $issueData = json_decode($response->getBody(), true);
+            Log::info('[GithubService] GitHub issue updated successfully', [
+                'ticket_id' => $ticketId,
+                'issue_number' => $issueNumber,
+            ]);
+            return $issueData;
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $response = $e->getResponse();
+            if ($response && in_array($response->getStatusCode(), [429, 403])) {
+                $statusCode = $response->getStatusCode();
+                $message = $statusCode === 429 ? 'Rate limit exceeded' : 'Forbidden access';
+                Log::warning("[GithubService] GitHub API error: {$message}", [
+                    'ticket_id' => $ticketId,
+                    'issue_number' => $issueNumber,
+                    'status_code' => $statusCode,
+                    'error' => $e->getMessage(),
+                ]);
+                throw $e; // Lempar ulang untuk ditangani oleh job
+            }
+            Log::error('[GithubService] Error updating GitHub issue', [
+                'ticket_id' => $ticketId,
+                'issue_number' => $issueNumber,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
     /**
-     * Mengubah status issue di proyek.
+     * Memperbarui status issue di proyek.
      *
      * @param string $projectItemId
      * @param string $status
      * @return bool
+     * @throws \Exception
      */
-    public function updateIssueStatus(string $projectItemId, string $status)
+    public function updateIssueStatus(string $projectItemId, string $status): bool
     {
-        $statusOptionId = self::STATUS_OPTIONS[strtolower($status)] ?? null;
-
-        if (!$statusOptionId) {
-            Log::error('Invalid status provided', ['status' => $status]);
-            return false;
-        }
-
-        $query = <<<'GRAPHQL'
-        mutation($projectId: ID!, $itemId: ID!, $statusFieldId: ID!, $statusOptionId: String!) {
-          updateProjectV2ItemFieldValue(input: {
-            projectId: $projectId,
-            itemId: $itemId,
-            fieldId: $statusFieldId,
-            value: { singleSelectOptionId: $statusOptionId }
-          }) {
-            projectV2Item {
-              id
+        try {
+            $statusFieldId = $this->getProjectFieldId('Status');
+            if (!$statusFieldId) {
+                Log::error('Status field ID not found', ['project_item_id' => $projectItemId]);
+                throw new \Exception('Status field ID not found for project item ' . $projectItemId);
             }
-          }
-        }
-        GRAPHQL;
 
-        $response = Http::withToken($this->token)
-            ->post('https://api.github.com/graphql', [
-                'query' => $query,
-                'variables' => [
-                    'projectId' => $this->projectId,
-                    'itemId' => $projectItemId,
-                    'statusFieldId' => $this->statusFieldId,
-                    'statusOptionId' => $statusOptionId,
+            // Ambil nama opsi status dari konfigurasi
+            $statusName = config('services.github.status_options.' . strtolower($status), null);
+            if (!$statusName) {
+                Log::warning('Status option not found in mapping', [
+                    'status' => $status,
+                    'project_item_id' => $projectItemId,
+                ]);
+                throw new \Exception('Status option not found in mapping for status ' . $status);
+            }
+
+            // Konversi nama opsi status ke singleSelectOptionId
+            $statusOptionId = $this->getSingleSelectOptionId($statusFieldId, $statusName);
+            if (!$statusOptionId) {
+                Log::error('Failed to fetch single select option ID', [
+                    'field_id' => $statusFieldId,
+                    'option_name' => $statusName,
+                    'project_item_id' => $projectItemId,
+                ]);
+                throw new \Exception('Failed to fetch single select option ID for status ' . $statusName);
+            }
+
+            $fieldValues = [
+                [
+                    'fieldId' => $statusFieldId,
+                    'value' => ['singleSelectOptionId' => $statusOptionId],
                 ],
-            ]);
+            ];
 
-        if ($response->successful()) {
-            return true;
-        }
-
-        Log::error('Failed to update issue status', [
-            'status' => $response->status(),
-            'body' => $response->json(),
-        ]);
-
-        return false;
-    }
-
-    public function updateIssue(array $data): ?array
-    {
-        $retries = 0;
-        $maxRetries = 3;
-        $issueNumber = $data['issue_number'] ?? null;
-        $ticketId = $data['ticket_id'] ?? 'unknown';
-
-        if (!$issueNumber) {
-            Log::error('Cannot update issue: Missing issue_number', ['ticket_id' => $ticketId]);
-            return null;
-        }
-
-        while ($retries < $maxRetries) {
-            try {
-                // Perbarui label jika diperlukan
-                $labels = $data['labels'] ?? [];
-                $labelColors = $data['label_colors'] ?? [];
-                foreach ($labels as $label) {
-                    $color = $labelColors[$label] ?? self::DEFAULT_COLOR;
-                    $description = "Label untuk $label";
-                    $this->createLabel($label, $description, $color);
-                }
-
-                // Kirim permintaan PATCH untuk memperbarui issue
-                $response = $this->client->patch("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
-                    'json' => [
-                        'title' => $data['title'],
-                        'body' => $data['body'],
-                        'assignees' => $data['assignees'] ?? [],
-                        'labels' => $labels,
-                    ],
+            $success = $this->updateProjectFields($projectItemId, $fieldValues);
+            if ($success) {
+                Log::info('GitHub issue status updated successfully', [
+                    'project_item_id' => $projectItemId,
+                    'status' => $status,
+                    'status_option_id' => $statusOptionId,
+                    'status_name' => $statusName,
                 ]);
-
-                $issueData = json_decode($response->getBody(), true);
-                Log::info('GitHub issue updated successfully', [
-                    'ticket_id' => $ticketId,
-                    'issue_number' => $issueNumber,
+            } else {
+                Log::warning('Failed to update GitHub issue status', [
+                    'project_item_id' => $projectItemId,
+                    'status' => $status,
+                    'status_option_id' => $statusOptionId,
+                    'status_name' => $statusName,
                 ]);
-                return $issueData;
-            } catch (\GuzzleHttp\Exception\RequestException $e) {
-                $response = $e->getResponse();
-                // Cek apakah ada respons dan apakah statusnya 429 atau 403
-                if ($response && in_array($response->getStatusCode(), [429, 403])) {
-                    $retryAfter = $e->getResponse()->getHeader('Retry-After')[0] ?? (2 ** $retries + rand(0, 100) / 100);
-                    sleep($retryAfter);
-                    $retries++;
-                } else {
-                    Log::error('Error updating GitHub issue', [
-                        'ticket_id' => $ticketId,
-                        'issue_number' => $issueNumber,
-                        'error' => $e->getMessage(),
-                    ]);
-                    return null;
-                }
             }
+
+            return $success;
+        } catch (\Exception $e) {
+            Log::error('Exception in updateIssueStatus', [
+                'project_item_id' => $projectItemId,
+                'status' => $status,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e; // Lempar ulang untuk ditangani oleh job
         }
-
-        Log::error('Failed to update GitHub issue after retries', [
-            'ticket_id' => $ticketId,
-            'issue_number' => $issueNumber,
-        ]);
-        return null;
     }
-
 }
