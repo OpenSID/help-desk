@@ -23,7 +23,7 @@ class Ticket extends Model implements HasMedia
         'name', 'content', 'owner_id', 'responsible_id',
         'status_id', 'project_id', 'code', 'order', 'type_id',
         'priority_id', 'estimation', 'epic_id', 'sprint_id', 'master_application_id', 'milestone_id',
-        'issue_source_id'
+          'issue_source_id', 'github_issue_url', 'github_issue_number', 'github_project_item_id',
     ];
 
     public static function boot()
@@ -48,24 +48,31 @@ class Ticket extends Model implements HasMedia
         });
 
         static::updating(function (Ticket $item) {
-            $old = Ticket::where('id', $item->id)->first();
+            $old = Ticket::with('status')->where('id', $item->id)->first();
 
             // Ticket activity based on status
-            $oldStatus = $old->status_id;
-            if ($oldStatus != $item->status_id) {
+            $oldStatusId = $old ? $old->status_id : null;
+            $newStatusId = $item->status_id;
+
+            if ($oldStatusId !== $newStatusId) {
+                // Gunakan user_id default jika auth tidak tersedia (misalnya, dari job queue)
+                // Gunakan auth()->user()->id jika tersedia, jika tidak gunakan owner_id
+                $userId = auth()->check() ? auth()->user()->id : $item->owner_id;
+
                 TicketActivity::create([
                     'ticket_id' => $item->id,
-                    'old_status_id' => $oldStatus,
-                    'new_status_id' => $item->status_id,
-                    'user_id' => auth()->user()->id
+                    'old_status_id' => $oldStatusId,
+                    'new_status_id' => $newStatusId,
+                    'user_id' => $userId ?: null, // Null jika tidak ada pengguna
                 ]);
+
                 foreach ($item->watchers as $user) {
                     $user->notify(new TicketStatusUpdated($item));
                 }
             }
 
             // Ticket sprint update
-            $oldSprint = $old->sprint_id;
+            $oldSprint = $old ? $old->sprint_id : null;
             if ($oldSprint && !$item->sprint_id) {
                 Ticket::where('id', $item->id)->update(['epic_id' => null]);
             } elseif ($item->sprint_id && $item->sprint->epic_id) {
@@ -219,7 +226,7 @@ class Ticket extends Model implements HasMedia
     public function completudePercentage(): Attribute
     {
         return new Attribute(
-            get: fn() => $this->estimationProgress
+            get: fn () => $this->estimationProgress
         );
     }
 

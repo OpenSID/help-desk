@@ -152,7 +152,8 @@ class TicketResource extends Resource
                                 Forms\Components\Select::make('responsible_id')
                                     ->label(__('Ticket responsible'))
                                     ->searchable()
-                                    ->options(fn() => User::all()->pluck('name', 'id')->toArray()),
+                                    ->options(fn() => User::all()->pluck('name', 'id')->toArray())
+                                    ->required(),
 
                                 Forms\Components\Select::make('master_application_id')
                                     ->label(__('Aplikasi'))

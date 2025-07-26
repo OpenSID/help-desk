@@ -17,6 +17,16 @@ class TicketStatus extends Model
         'project_id'
     ];
 
+    // daftarkan status tiket
+    public const STATUS_DONE = 'Done';
+    public const STATUS_SELESAI = 'Selesai';
+
+    // Daftar status yang didukung untuk job queue ProcessGitHubTicket dengan aksi close
+    public static $statusMapping = [
+        self::STATUS_DONE => self::STATUS_DONE,
+        self::STATUS_SELESAI => self::STATUS_SELESAI,
+    ];
+
     public static function boot()
     {
         parent::boot();

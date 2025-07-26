@@ -13,10 +13,13 @@
 
 namespace App\Filament\Resources\TicketResource\Pages;
 
-use App\Filament\Resources\TicketResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Models\Ticket;
 use Illuminate\Support\Str;
 use App\Services\TelegramService;
+use Illuminate\Support\Facades\Log;
+use League\HTMLToMarkdown\HtmlConverter;
+use App\Filament\Resources\TicketResource;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateTicket extends CreateRecord
 {
@@ -102,5 +105,64 @@ class CreateTicket extends CreateRecord
         // Sinkronisasi kategori tiket (many-to-many)
         $this->record->categories()->sync($this->categories);
     }
-}
 
+    protected function handleRecordCreation(array $data): Ticket
+    {
+        try {
+            // Buat tiket di database
+            $ticket = parent::handleRecordCreation($data);
+
+            // Ambil instance HtmlConverter dari container
+            $converter = app(HtmlConverter::class);
+
+            // Bersihkan HTML: ganti <br> berturut-turut dengan satu <br>
+            $cleanedHtml = preg_replace('/<br\s*\/?>\s*<br\s*\/?>/i', '<br>', $ticket->content ?? '');
+
+            $markdownContent = $converter->convert($cleanedHtml);
+
+            // Hilangkan backslash dari URL (misal: \_ menjadi _)
+            $markdownContent = str_replace(['\_', '\*', '\[', '\]'], ['_', '*', '[', ']'], $markdownContent);
+
+            // Persiapkan data untuk GitHub
+            $labels = [
+                'Helpdesk',
+                $ticket->type?->name,
+                $ticket->project?->name,
+            ];
+
+            $labelColors = [
+                'Helpdesk' => '0000FF', // Biru untuk label Helpdesk
+                $ticket->type?->name => $ticket->type?->color ?? 'D3D3D3',
+                $ticket->project?->name => 'D3D3D3',
+            ];
+
+
+            $githubData = [
+                'title' => $ticket->name,
+                'body' => $markdownContent,
+                'assignees' => $ticket->responsible?->github_username ? [$ticket->responsible->github_username] : [],
+                'labels' => $labels,
+                'label_colors' => $labelColors,
+                'ticket_id' => $ticket->id, // Pastikan ini ada
+            ];
+
+            // Log data untuk debugging
+            Log::info('[CreateTicket] Dispatching ProcessGitHubTicket job', [
+                'ticket_id' => $ticket->id,
+                'github_data' => $githubData,
+            ]);
+
+            // Dispatch ke queue untuk menghindari rate limit
+            \App\Jobs\ProcessGitHubTicket::dispatch('create', $githubData);
+
+            // Simpan perubahan ke database
+            $ticket->save();
+
+            return $ticket;
+        } catch (\Exception $e) {
+            Log::error('[CreateTicket] Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id ?? 'unknown']);
+            throw $e;
+        }
+    }
+
+}

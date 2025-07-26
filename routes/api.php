@@ -17,3 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+/**
+ * Route API untuk webhook GitHub.
+ * - Menggunakan controller GitHubWebhookController untuk menangani webhook.
+ */
+Route::post('/github/webhook', [App\Http\Controllers\GitHubWebhookController::class, 'handle'])->name('github.webhook');

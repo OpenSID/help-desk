@@ -35,6 +35,17 @@ return [
         'client_id' => env('GITHUB_ID'),
         'client_secret' => env('GITHUB_SECRET'),
         'redirect' => env('GITHUB_URL'),
+        'token' => env('GITHUB_TOKEN'), // mulai
+        'owner' => env('GITHUB_OWNER'),
+        'repo' => env('GITHUB_REPO'),
+        'project_id' => env('GITHUB_PROJECT_ID'),
+        'webhook_secret' => env('GITHUB_WEBHOOK_SECRET'),
+        'status_options' => [ // opsi status yang sebenarnya ada di field "Status" project GitHub
+            'done' => 'Selesai',           // Nama opsi status di GitHub Project
+            'sedang_dikerjakan' => 'Sedang Dikerjakan',
+            'review' => 'Review',
+            'target' => 'Target',
+        ],
     ],
 
     'google' => [
@@ -71,5 +82,4 @@ return [
         'bot_token_telegram' => env('TELEGRAM_BOT_TOKEN'),
         'group_id_telegram' => env('TELEGRAM_GROUP_ID'),
     ],
-
 ];
