@@ -63,6 +63,7 @@ class ProcessGitHubTicket implements ShouldQueue
                 } else {
                     Log::error('Missing node_id for adding to project', ['ticket_id' => $ticketId]);
                 }
+                $ticket->save();
 
                 if ($projectItemId) {
                     $fieldValues = $this->prepareProjectFieldValues($ticket, $github, $projectItemId);
@@ -71,7 +72,6 @@ class ProcessGitHubTicket implements ShouldQueue
                     }
                 }
 
-                $ticket->save();
             } catch (\GuzzleHttp\Exception\RequestException $e) {
                 Log::error('Exception during create action', [
                     'ticket_id' => $ticketId,
@@ -218,7 +218,13 @@ class ProcessGitHubTicket implements ShouldQueue
                 'value' => $ticket->owner?->name ?? 'unknown',
                 'warning' => 'Add this author to the "Ticket Authors" field in the GitHub project manually.',
             ],
+            'Modul' => [
+                'fieldIdMethod' => 'getProjectFieldId',
+                'valueMethod' => 'getSingleSelectOptionId',
+                'value' => 'Issue',
+            ],
         ];
+
 
         foreach ($fields as $fieldName => $config) {
             $fieldIdMethod = $config['fieldIdMethod'];
@@ -226,6 +232,7 @@ class ProcessGitHubTicket implements ShouldQueue
             $value = $config['value'];
 
             $fieldId = $github->$fieldIdMethod($fieldName);
+
             if ($fieldId) {
                 $optionId = $github->$valueMethod($fieldId, $value);
                 if ($optionId) {

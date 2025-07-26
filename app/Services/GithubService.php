@@ -22,6 +22,10 @@ class GithubService
     // Warna default jika tidak ada warna dari model
     protected const DEFAULT_COLOR = 'D3D3D3'; // Abu-abu
 
+    // Cache untuk menyimpan field data
+    protected static $fieldsCache = null;
+    protected static $fieldOptionsCache = [];
+
     public function __construct()
     {
         $this->client = new Client([
@@ -56,6 +60,7 @@ class GithubService
                 $description = "Label untuk $label";
                 $this->createLabel($label, $description, $color);
             }
+
 
             $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
                 'json' => [
@@ -259,22 +264,49 @@ class GithubService
     }
 
     /**
-     * Mendapatkan ID field proyek berdasarkan nama field.
+     * Mendapatkan semua field data dari proyek dan cache hasilnya.
      *
-     * @param string $fieldName
-     * @return string|null
+     * @return array
+     * @throws \Exception
      */
-    public function getProjectFieldId(string $fieldName)
+    protected function getAllProjectFields(): array
     {
+        // Return cached data jika sudah ada
+        if (static::$fieldsCache !== null) {
+            return static::$fieldsCache;
+        }
+
         $query = <<<'GRAPHQL'
         query($projectId: ID!) {
           node(id: $projectId) {
             ... on ProjectV2 {
-              fields(first: 12) {
+              fields(first: 100) {
                 nodes {
+                  __typename
                   ... on ProjectV2FieldCommon {
                     id
                     name
+                    dataType
+                  }
+                  ... on ProjectV2SingleSelectField {
+                    id
+                    name
+                    dataType
+                    options {
+                      id
+                      name
+                    }
+                  }
+                  ... on ProjectV2IterationField {
+                    id
+                    name
+                    dataType
+                    configuration {
+                      iterations {
+                        id
+                        title
+                      }
+                    }
                   }
                 }
               }
@@ -293,105 +325,294 @@ class GithubService
                 ]);
 
             if ($response->successful()) {
-                $fields = $response->json('data.node.fields.nodes');
+                $fields = $response->json('data.node.fields.nodes') ?? [];
+
+                // Cache hasil untuk penggunaan selanjutnya
+                static::$fieldsCache = $fields;
+
+                // Cache options untuk single select fields
                 foreach ($fields as $field) {
-                    if ($field['name'] === $fieldName) {
-                        return $field['id'];
+                    if (isset($field['options']) && is_array($field['options'])) {
+                        static::$fieldOptionsCache[$field['id']] = $field['options'];
                     }
                 }
+
+                Log::info('Project fields cached successfully', [
+                    'field_count' => count($fields),
+                    'project_id' => $this->projectId,
+                ]);
+
+                return $fields;
             }
 
-            // Jika tidak berhasil atau field tidak ditemukan, log error dan lempar exception
-            Log::error('Failed to fetch project field ID', [
-                'field_name' => $fieldName,
+            // Jika tidak berhasil, log error dan lempar exception
+            Log::error('Failed to fetch all project fields', [
                 'status' => $response->status(),
                 'body' => $response->json(),
+                'project_id' => $this->projectId,
             ]);
 
-            throw new \Exception("Failed to fetch project field ID for '{$fieldName}'. Status: {$response->status()}, Details: " . json_encode($response->json()));
+            throw new \Exception("Failed to fetch project fields. Status: {$response->status()}, Details: " . json_encode($response->json()));
         } catch (\Exception $e) {
-            Log::error('Exception in getProjectFieldId', [
-                'field_name' => $fieldName,
+            Log::error('Exception in getAllProjectFields', [
                 'error' => $e->getMessage(),
+                'project_id' => $this->projectId,
             ]);
-            throw $e; // Lempar ulang untuk ditangani oleh job
+            throw $e;
         }
     }
 
     /**
-     * Mendapatkan ID opsi untuk field SINGLE_SELECT berdasarkan nama opsi.
+     * Mendapatkan ID field proyek berdasarkan nama field (optimized with caching).
+     *
+     * @param string $fieldName
+     * @return string|null
+     * @throws \Exception
+     */
+    public function getProjectFieldId(string $fieldName): ?string
+    {
+        try {
+            // Ambil semua fields (dari cache jika tersedia)
+            $fields = $this->getAllProjectFields();
+
+            foreach ($fields as $field) {
+                if ($field['name'] === $fieldName) {
+                    return $field['id'];
+                }
+            }
+
+            // Field tidak ditemukan
+            Log::warning('Project field not found', [
+                'field_name' => $fieldName,
+                'available_fields' => array_column($fields, 'name'),
+                'project_id' => $this->projectId,
+            ]);
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Exception in getProjectFieldId', [
+                'field_name' => $fieldName,
+                'error' => $e->getMessage(),
+                'project_id' => $this->projectId,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Mendapatkan multiple field IDs sekaligus untuk batch operations.
+     *
+     * @param array $fieldNames
+     * @return array Array dengan format ['fieldName' => 'fieldId']
+     * @throws \Exception
+     */
+    public function getMultipleFieldIds(array $fieldNames): array
+    {
+        try {
+            // Ambil semua fields sekali saja
+            $fields = $this->getAllProjectFields();
+            $result = [];
+
+            // Map field names ke IDs
+            foreach ($fields as $field) {
+                if (in_array($field['name'], $fieldNames, true)) {
+                    $result[$field['name']] = $field['id'];
+                }
+            }
+
+            // Check jika ada field yang tidak ditemukan
+            $notFound = array_diff($fieldNames, array_keys($result));
+            if (!empty($notFound)) {
+                Log::warning('Some project fields not found', [
+                    'not_found_fields' => $notFound,
+                    'available_fields' => array_column($fields, 'name'),
+                    'project_id' => $this->projectId,
+                ]);
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('Exception in getMultipleFieldIds', [
+                'field_names' => $fieldNames,
+                'error' => $e->getMessage(),
+                'project_id' => $this->projectId,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Mendapatkan ID opsi untuk field SINGLE_SELECT berdasarkan nama opsi (optimized with caching).
      *
      * @param string $fieldId
      * @param string $optionName
      * @return string|null
      */
-    public function getSingleSelectOptionId(string $fieldId, string $optionName)
+    public function getSingleSelectOptionId(string $fieldId, string $optionName): ?string
     {
-        $query = <<<'GRAPHQL'
-        query($projectId: ID!) {
-        node(id: $projectId) {
-            ... on ProjectV2 {
-            fields(first: 20) {
-                nodes {
-                ... on ProjectV2SingleSelectField {
-                    id
-                    name
-                    options {
-                    id
-                    name
+        try {
+            // Cek cache terlebih dahulu
+            if (isset(static::$fieldOptionsCache[$fieldId])) {
+                $options = static::$fieldOptionsCache[$fieldId];
+                foreach ($options as $option) {
+                    if (strtolower($option['name']) === strtolower($optionName)) {
+                        return $option['id'];
                     }
                 }
-                }
-            }
-            }
-        }
-        }
-        GRAPHQL;
 
-        try {
-            $response = Http::withToken($this->token)
-                ->post('https://api.github.com/graphql', [
-                    'query' => $query,
-                    'variables' => [
-                        'projectId' => $this->projectId,
-                    ],
+                Log::warning('Single select option not found in cached data', [
+                    'field_id' => $fieldId,
+                    'option_name' => $optionName,
+                    'available_options' => array_column($options, 'name'),
                 ]);
+                return null;
+            }
 
-            if ($response->successful()) {
-                $fields = $response->json('data.node.fields.nodes') ?? [];
-                foreach ($fields as $field) {
-                    // Pastikan field adalah SingleSelectField dan memiliki id serta options
-                    if (isset($field['id'], $field['options']) && $field['id'] === $fieldId) {
-                        foreach ($field['options'] as $option) {
-                            if (strtolower($option['name']) === strtolower($optionName)) {
-                                return $option['id'];
-                            }
+            // Jika tidak ada di cache, ambil semua fields (ini akan populate cache)
+            $fields = $this->getAllProjectFields();
+
+            // Cari field yang sesuai
+            foreach ($fields as $field) {
+                if ($field['id'] === $fieldId && isset($field['options'])) {
+                    foreach ($field['options'] as $option) {
+                        if (strtolower($option['name']) === strtolower($optionName)) {
+                            return $option['id'];
                         }
                     }
+
+                    Log::warning('Single select option not found', [
+                        'field_id' => $fieldId,
+                        'option_name' => $optionName,
+                        'available_options' => array_column($field['options'], 'name'),
+                    ]);
+                    return null;
                 }
             }
 
-            // Jika tidak berhasil atau opsi tidak ditemukan, log error dan lempar exception
-            Log::error('Failed to fetch single select option ID', [
+            Log::error('Single select field not found', [
                 'field_id' => $fieldId,
                 'option_name' => $optionName,
-                'status' => $response->status(),
-                'body' => $response->json(),
             ]);
+            return null;
 
-            throw new \Exception("Failed to fetch single select option ID for field '{$fieldId}' and option '{$optionName}'. Status: {$response->status()}, Details: " . json_encode($response->json()));
         } catch (\Exception $e) {
             Log::error('Exception in getSingleSelectOptionId', [
                 'field_id' => $fieldId,
                 'option_name' => $optionName,
                 'error' => $e->getMessage(),
             ]);
-            throw $e; // Lempar ulang untuk ditangani oleh job
+            throw $e;
         }
     }
 
     /**
-     * Memperbarui beberapa field di proyek.
+     * Helper method untuk membuat array field values untuk batch update (optimized).
+     *
+     * @param array $fieldMappings Array dengan format ['fieldName' => 'value']
+     * @return array
+     * @throws \Exception
+     */
+    public function prepareFieldValues(array $fieldMappings): array
+    {
+        $fieldValues = [];
+
+        // Ambil semua field IDs yang diperlukan dalam satu call
+        $fieldNames = array_keys($fieldMappings);
+        $fieldIds = $this->getMultipleFieldIds($fieldNames);
+
+        foreach ($fieldMappings as $fieldName => $value) {
+            if (!isset($fieldIds[$fieldName])) {
+                throw new \Exception("Field '{$fieldName}' not found in project");
+            }
+
+            $fieldId = $fieldIds[$fieldName];
+
+            // Format value berdasarkan tipe field
+            $formattedValue = $this->formatFieldValue($fieldName, $value, $fieldId);
+
+            $fieldValues[] = [
+                'fieldId' => $fieldId,
+                'value' => $formattedValue,
+            ];
+        }
+
+        return $fieldValues;
+    }
+
+    /**
+     * Format value berdasarkan tipe field (optimized).
+     *
+     * @param string $fieldName
+     * @param mixed $value
+     * @param string $fieldId Optional - jika sudah diketahui field ID
+     * @return array
+     * @throws \Exception
+     */
+    protected function formatFieldValue(string $fieldName, $value, ?string $fieldId = null): array
+    {
+        // Untuk single select field, konversi nama opsi ke ID
+        if ($this->isSingleSelectField($fieldName)) {
+            if (!$fieldId) {
+                $fieldId = $this->getProjectFieldId($fieldName);
+            }
+
+            $optionId = $this->getSingleSelectOptionId($fieldId, $value);
+
+            if (!$optionId) {
+                throw new \Exception("Option '{$value}' not found for field '{$fieldName}'");
+            }
+
+            return ['singleSelectOptionId' => $optionId];
+        }
+
+        // Untuk text field
+        if (is_string($value)) {
+            return ['text' => $value];
+        }
+
+        // Untuk number field
+        if (is_numeric($value)) {
+            return ['number' => (float) $value];
+        }
+
+        // Untuk date field (format ISO 8601)
+        if ($value instanceof \DateTime) {
+            return ['date' => $value->format('Y-m-d')];
+        }
+
+        // Default: text
+        return ['text' => (string) $value];
+    }
+
+    /**
+     * Clear cache untuk fields data.
+     * Berguna jika terjadi perubahan struktur project.
+     *
+     * @return void
+     */
+    public static function clearFieldsCache(): void
+    {
+        static::$fieldsCache = null;
+        static::$fieldOptionsCache = [];
+        Log::info('Project fields cache cleared');
+    }
+
+    /**
+     * Periksa apakah field adalah single select field.
+     *
+     * @param string $fieldName
+     * @return bool
+     */
+    protected function isSingleSelectField(string $fieldName): bool
+    {
+        // Daftar field yang diketahui sebagai single select
+        $singleSelectFields = ['Status', 'Priority', 'Modul', 'Category'];
+
+        return in_array($fieldName, $singleSelectFields, true);
+    }
+
+    /**
+     * Memperbarui beberapa field di proyek menggunakan batch mutation.
      *
      * @param string $itemId
      * @param array $fieldValues
@@ -399,46 +620,103 @@ class GithubService
      */
     public function updateProjectFields(string $itemId, array $fieldValues)
     {
-        $success = true;
-
-        foreach ($fieldValues as $fieldValue) {
-            $query = <<<'GRAPHQL'
-            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: ProjectV2FieldValue!) {
-              updateProjectV2ItemFieldValue(input: {
-                projectId: $projectId,
-                itemId: $itemId,
-                fieldId: $fieldId,
-                value: $value
-              }) {
-                projectV2Item {
-                  id
-                }
-              }
+        try {
+            if (empty($fieldValues)) {
+                Log::warning('No field values provided for update', ['item_id' => $itemId]);
+                return true;
             }
-            GRAPHQL;
+
+            // Buat mutation untuk multiple field updates dalam satu request
+            $mutationParts = [];
+            $variables = [
+                'projectId' => $this->projectId,
+                'itemId' => $itemId,
+            ];
+
+
+            foreach ($fieldValues as $index => $fieldValue) {
+                $fieldVar = "field{$index}Id";
+                $valueVar = "field{$index}Value";
+
+                $variables[$fieldVar] = $fieldValue['fieldId'];
+                $variables[$valueVar] = $fieldValue['value'];
+
+                $mutationParts[] = "
+                  update{$index}: updateProjectV2ItemFieldValue(input: {
+                    projectId: \$projectId,
+                    itemId: \$itemId,
+                    fieldId: \${$fieldVar},
+                    value: \${$valueVar}
+                  }) {
+                    projectV2Item {
+                      id
+                    }
+                  }";
+            }
+
+
+
+            $mutationBody = implode("\n", $mutationParts);
+
+            // Buat signature untuk semua variables
+            $variableSignatures = ['$projectId: ID!', '$itemId: ID!'];
+            foreach ($fieldValues as $index => $fieldValue) {
+                $variableSignatures[] = "\$field{$index}Id: ID!";
+                $variableSignatures[] = "\$field{$index}Value: ProjectV2FieldValue!";
+            }
+
+            $variableSignature = implode(', ', $variableSignatures);
+
+            $query = "mutation({$variableSignature}) {{$mutationBody}}";
+
+
+
+            Log::info('Executing batch field update', [
+                'item_id' => $itemId,
+                'field_count' => count($fieldValues),
+                'field_ids' => array_column($fieldValues, 'fieldId'),
+            ]);
 
             $response = Http::withToken($this->token)
                 ->post('https://api.github.com/graphql', [
                     'query' => $query,
-                    'variables' => [
-                        'projectId' => $this->projectId,
-                        'itemId' => $itemId,
-                        'fieldId' => $fieldValue['fieldId'],
-                        'value' => $fieldValue['value'],
-                    ],
+                    'variables' => $variables,
                 ]);
 
-            if (!$response->successful()) {
-                Log::error('Failed to update project field', [
-                    'field_id' => $fieldValue['fieldId'],
-                    'status' => $response->status(),
-                    'body' => $response->json(),
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                // Periksa apakah ada error dalam response
+                if (isset($responseData['errors'])) {
+                    Log::error('GraphQL errors in batch field update', [
+                        'item_id' => $itemId,
+                        'errors' => $responseData['errors'],
+                    ]);
+                    return false;
+                }
+
+                Log::info('Batch field update successful', [
+                    'item_id' => $itemId,
+                    'updated_fields' => count($fieldValues),
                 ]);
-                $success = false;
+                return true;
             }
-        }
 
-        return $success;
+            Log::error('Failed to update project fields in batch', [
+                'item_id' => $itemId,
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            return false;
+
+        } catch (\Exception $e) {
+            Log::error('Exception in batch field update', [
+                'item_id' => $itemId,
+                'error' => $e->getMessage(),
+                'field_count' => count($fieldValues),
+            ]);
+            return false;
+        }
     }
 
     public function updateIssue(array $data): ?array
@@ -499,18 +777,13 @@ class GithubService
      *
      * @param string $projectItemId
      * @param string $status
+     * @param array $additionalFields Optional - field tambahan untuk di-update bersamaan
      * @return bool
      * @throws \Exception
      */
-    public function updateIssueStatus(string $projectItemId, string $status): bool
+    public function updateIssueStatus(string $projectItemId, string $status, array $additionalFields = []): bool
     {
         try {
-            $statusFieldId = $this->getProjectFieldId('Status');
-            if (!$statusFieldId) {
-                Log::error('Status field ID not found', ['project_item_id' => $projectItemId]);
-                throw new \Exception('Status field ID not found for project item ' . $projectItemId);
-            }
-
             // Ambil nama opsi status dari konfigurasi
             $statusName = config('services.github.status_options.' . strtolower($status), null);
             if (!$statusName) {
@@ -521,38 +794,30 @@ class GithubService
                 throw new \Exception('Status option not found in mapping for status ' . $status);
             }
 
-            // Konversi nama opsi status ke singleSelectOptionId
-            $statusOptionId = $this->getSingleSelectOptionId($statusFieldId, $statusName);
-            if (!$statusOptionId) {
-                Log::error('Failed to fetch single select option ID', [
-                    'field_id' => $statusFieldId,
-                    'option_name' => $statusName,
-                    'project_item_id' => $projectItemId,
-                ]);
-                throw new \Exception('Failed to fetch single select option ID for status ' . $statusName);
-            }
+            // Siapkan field mappings untuk batch update
+            $fieldMappings = ['Status' => $statusName];
 
-            $fieldValues = [
-                [
-                    'fieldId' => $statusFieldId,
-                    'value' => ['singleSelectOptionId' => $statusOptionId],
-                ],
-            ];
+            // Tambahkan field tambahan jika ada
+            $fieldMappings = array_merge($fieldMappings, $additionalFields);
+
+            // Konversi ke format field values
+            $fieldValues = $this->prepareFieldValues($fieldMappings);
 
             $success = $this->updateProjectFields($projectItemId, $fieldValues);
+
             if ($success) {
-                Log::info('GitHub issue status updated successfully', [
+                Log::info('GitHub issue fields updated successfully', [
                     'project_item_id' => $projectItemId,
                     'status' => $status,
-                    'status_option_id' => $statusOptionId,
                     'status_name' => $statusName,
+                    'additional_fields' => array_keys($additionalFields),
                 ]);
             } else {
-                Log::warning('Failed to update GitHub issue status', [
+                Log::warning('Failed to update GitHub issue fields', [
                     'project_item_id' => $projectItemId,
                     'status' => $status,
-                    'status_option_id' => $statusOptionId,
                     'status_name' => $statusName,
+                    'additional_fields' => array_keys($additionalFields),
                 ]);
             }
 
@@ -564,6 +829,58 @@ class GithubService
                 'error' => $e->getMessage(),
             ]);
             throw $e; // Lempar ulang untuk ditangani oleh job
+        }
+    }
+
+    /**
+     * Method utama untuk update batch multiple fields sekaligus.
+     *
+     * @param string $projectItemId
+     * @param array $fieldMappings Array dengan format ['fieldName' => 'value']
+     * @return bool
+     * @throws \Exception
+     *
+     * Contoh penggunaan:
+     * $github->updateMultipleFields($itemId, [
+     *     'Status' => 'In Progress',
+     *     'Modul' => 'Dashboard',
+     *     'Priority' => 'High'
+     * ]);
+     */
+    public function updateMultipleFields(string $projectItemId, array $fieldMappings): bool
+    {
+        try {
+            if (empty($fieldMappings)) {
+                Log::warning('No field mappings provided for batch update', ['item_id' => $projectItemId]);
+                return true;
+            }
+
+            Log::info('Starting batch field update', [
+                'project_item_id' => $projectItemId,
+                'fields' => array_keys($fieldMappings),
+            ]);
+
+            // Konversi field mappings ke format yang dibutuhkan
+            $fieldValues = $this->prepareFieldValues($fieldMappings);
+
+            // Jalankan batch update
+            $success = $this->updateProjectFields($projectItemId, $fieldValues);
+
+            if ($success) {
+                Log::info('Batch field update completed successfully', [
+                    'project_item_id' => $projectItemId,
+                    'updated_fields' => array_keys($fieldMappings),
+                ]);
+            }
+
+            return $success;
+        } catch (\Exception $e) {
+            Log::error('Exception in batch field update', [
+                'project_item_id' => $projectItemId,
+                'field_mappings' => $fieldMappings,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
         }
     }
 }
