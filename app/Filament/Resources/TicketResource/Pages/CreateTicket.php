@@ -153,7 +153,7 @@ class CreateTicket extends CreateRecord
             ]);
 
             // Dispatch ke queue untuk menghindari rate limit
-            \App\Jobs\ProcessGitHubTicket::dispatch('create', $githubData)->onQueue('github');
+            \App\Jobs\ProcessGitHubTicket::dispatch('create', $githubData);
 
             // Simpan perubahan ke database
             $ticket->save();

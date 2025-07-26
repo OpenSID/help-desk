@@ -60,11 +60,11 @@ class GithubService
                 $description = "Label untuk $label";
                 $this->createLabel($label, $description, $color);
             }
-
+            $link = htmlspecialchars(route('filament.resources.tickets.view', $data['ticket_id']), ENT_QUOTES, 'UTF-8');
 
             $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
                 'json' => [
-                    'title' => $data['title'],
+                    'title' => "{$link} - " . $data['title'] ,
                     'body' => $data['body'],
                     'assignees' => $data['assignees'] ?? [],
                     'labels' => $labels,
@@ -723,6 +723,7 @@ class GithubService
     {
         $issueNumber = $data['issue_number'] ?? null;
         $ticketId = $data['ticket_id'] ?? 'unknown';
+        $link = htmlspecialchars(route('filament.resources.tickets.view', $data['ticket_id']), ENT_QUOTES, 'UTF-8');
 
         try {
             // Perbarui label jika diperlukan
@@ -734,10 +735,11 @@ class GithubService
                 $this->createLabel($label, $description, $color);
             }
 
+
             // Kirim permintaan PATCH untuk memperbarui issue
             $response = $this->client->patch("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
                 'json' => [
-                    'title' => $data['title'],
+                    'title' => $link . ' - ' . $data['title'],
                     'body' => $data['body'],
                     'assignees' => $data['assignees'] ?? [],
                     'labels' => $labels,

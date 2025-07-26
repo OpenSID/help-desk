@@ -26,7 +26,7 @@ class ProcessGitHubTicket implements ShouldQueue
     {
         $this->action = $action;
         $this->data = $data;
-        $this->onQueue('github');
+
         Log::info('[ProcessGitHubTicket] job initialized', [
             'action' => $this->action,
             'ticket_id' => $data['ticket_id'] ?? 'unknown',

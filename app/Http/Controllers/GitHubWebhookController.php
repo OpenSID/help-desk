@@ -36,7 +36,7 @@ class GitHubWebhookController extends Controller
 
         if ($action === 'closed' && $issueNumber && $issueState === 'closed') {
             // Dispatch job untuk memperbarui status tiket
-            \App\Jobs\ProcessGitHubTicket::dispatch('close', ['issue_number' => $issueNumber])->onQueue('github');
+            \App\Jobs\ProcessGitHubTicket::dispatch('close', ['issue_number' => $issueNumber]);
             Log::info('[GitHubWebhookController] GitHub issue closed, dispatching job to update ticket', [
                 'issue_number' => $issueNumber,
             ]);

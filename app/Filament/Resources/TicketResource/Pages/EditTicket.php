@@ -59,12 +59,12 @@ class EditTicket extends EditRecord
 
             $githubData = [
                 'title' => $this->record->name,
-                'body' => $markdownContent ?? '', 
+                'body' => $markdownContent ?? '',
                 'assignees' => $this->record->responsible?->github_username ? [$this->record->responsible->github_username] : [],
                 'labels' => $labels,
                 'label_colors' => $labelColors,
                 'ticket_id' => $this->record->id,
-                'issue_number' => $this->record->github_issue_number, 
+                'issue_number' => $this->record->github_issue_number,
                 'project_item_id' => $this->record->github_project_item_id,
             ];
 
@@ -75,7 +75,7 @@ class EditTicket extends EditRecord
             ]);
 
             // Dispatch job untuk memperbarui issue dan proyek GitHub
-            \App\Jobs\ProcessGitHubTicket::dispatch('update', $githubData)->onQueue('github');
+            \App\Jobs\ProcessGitHubTicket::dispatch('update', $githubData);
         } catch (\Exception $e) {
             Log::error('[EditTicket] Error queuing GitHub issue update: ' . $e->getMessage(), [
                 'ticket_id' => $this->record->id ?? 'unknown',
