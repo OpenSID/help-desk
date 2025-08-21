@@ -3,7 +3,7 @@ name: Deploy Helpdesk with Ansible
 on:
   pull_request:
     branches: [development]
-    # types: [closed]
+    types: [closed]
 
 permissions:
   contents: read
@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   deploy:
-    # if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
     name: Deploy Helpdesk to Production Server
     runs-on: ubuntu-latest
 
