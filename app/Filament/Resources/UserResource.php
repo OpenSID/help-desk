@@ -69,6 +69,13 @@ class UserResource extends Resource
                                     ->label(__('GitHub Username'))
                                     ->maxLength(255),
 
+                                Forms\Components\Select::make('role')
+                                    ->label(__('Roles'))
+                                    ->options([
+                                        'devops' => 'Devops',
+                                        'support' => 'Dukungan Teknis'
+                                    ]),
+
                                 Forms\Components\CheckboxList::make('roles')
                                     ->label(__('Permission roles'))
                                     ->required()
@@ -99,8 +106,24 @@ class UserResource extends Resource
                     ->searchable()
                     ->formatStateUsing(fn ($state) => $state ?: '-'),
 
-                Tables\Columns\TagsColumn::make('roles.name')
+                Tables\Columns\TextColumn::make('role')
                     ->label(__('Roles'))
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'support' => 'Dukungan Teknis',
+                        'devops'  => 'Devops',
+                        default   => ucfirst($state),
+                    })
+                    ->searchable(query: function ($query, $search) {
+                        return $query->where('role', 'like', "%{$search}%")
+                                    ->orWhereRaw("CASE
+                                        WHEN role = 'support' THEN 'Dukungan Teknis'
+                                        WHEN role = 'devops' THEN 'Devops'
+                                        ELSE role
+                                    END LIKE ?", ["%{$search}%"]);
+                    }),
+
+                Tables\Columns\TagsColumn::make('roles.name')
+                    ->label(__('Permission roles'))
                     ->limit(2),
 
                 Tables\Columns\TextColumn::make('email_verified_at')

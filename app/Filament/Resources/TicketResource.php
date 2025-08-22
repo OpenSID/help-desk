@@ -303,6 +303,9 @@ class TicketResource extends Resource
                                             ->columnSpan(2)
                                             ->options(function ($livewire) {
                                                 $query = Ticket::query();
+                                                // filter hanya bulan berjalan
+                                                $query->whereMonth('created_at', now()->month)
+                                                    ->whereYear('created_at', now()->year);
                                                 if ($livewire instanceof EditRecord && $livewire->record) {
                                                     $query->where('id', '<>', $livewire->record->id);
                                                 }
