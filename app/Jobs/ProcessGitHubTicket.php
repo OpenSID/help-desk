@@ -221,7 +221,7 @@ class ProcessGitHubTicket implements ShouldQueue
             'Modul' => [
                 'fieldIdMethod' => 'getProjectFieldId',
                 'valueMethod' => 'getSingleSelectOptionId',
-                'value' => 'Issue',
+                'value' => 'Dukungan Teknis',
             ],
         ];
 
