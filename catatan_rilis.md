@@ -9,6 +9,7 @@ Di rilis v2507.0.0 berisi penambahan fitur dan perbaikan lain sesuai dengan pela
 6. [#12](https://github.com/OpenSID/help-desk/issues/12) Fitur : Master Milestone
 7. [#22](https://github.com/OpenSID/help-desk/issues/22) Fitur: Menambahkan username github pada data user
 8. [#12](https://github.com/OpenSID/help-desk/issues/21) Fitur: Sinkron tiket ke github service issue dan project
+98. [#13](https://github.com/OpenSID/help-desk/issues/13) Fitur: Laporan Tiket Dalam grafik
 
 #### Perbaikan BUG
 

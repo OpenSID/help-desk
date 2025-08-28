@@ -125,12 +125,12 @@ return [
         'relations' => [
 
             // Default type
-            'default' => 'related_to',
+            'default' => 'duplicate_of',
 
             // Types list
             'list' => [
-                'related_to' => 'Related to',
-                'blocked_by' => 'Blocked by',
+                // 'related_to' => 'Related to',
+                // 'blocked_by' => 'Blocked by',
                 'duplicate_of' => 'Duplicate of'
             ],
 
