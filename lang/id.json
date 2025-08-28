@@ -275,5 +275,20 @@
     "Color": "Warna",
     "Name": "Nama",
     "Milestone": "Milestone",
-    "Issue Source": "Sumber Masalah"
+    "Issue Source": "Sumber Masalah",
+    "Report": "Laporan",
+    "Trend Ticket": "Tiket Tren",
+    "Ticket by owner": "Tiket berdasarkan pemilik",
+    "Ticket by responsible": "Tiket berdasarkan penanggung jawab",
+    "Ticket by service": "Tiket berdasarkan layanan",
+    "Ticket by application": "Tiket berdasarkan aplikasi",
+    "Ticket duplicates": "Tiket Berulang",
+    "Application": "Aplikasi",
+    "Start month": "Bulan mulai",
+    "End month": "Bulan akhir",
+    "Start year": "Tahun mulai",
+    "End year": "Tahun akhir",
+    "Month": "Bulan",
+    "Year": "Tahun",
+    "Data not found": "Data tidak ditemukan"
 }
