@@ -63,6 +63,12 @@ class TokenResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->sortable(),
+
+                Tables\Columns\TextColumn::make('plain_token')
+                    ->label('Token')
+                    ->copyable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+
                 Tables\Columns\TextColumn::make('tokenable.name')
                     ->label('User')
                     ->sortable()
