@@ -10,13 +10,13 @@ class Token extends Model
 
     protected $fillable = [
         'name',
-        'tokenable_id',
-        'tokenable_type',
+        'token',
         'abilities',
         'last_used_at',
         'expires_at',
         'plain_token',
-        'token',
+        'tokenable_id',
+        'tokenable_type',
     ];
 
     protected $hidden = [

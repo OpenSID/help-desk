@@ -23,3 +23,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
  * - Menggunakan controller GitHubWebhookController untuk menangani webhook.
  */
 Route::post('/github/webhook', [App\Http\Controllers\GitHubWebhookController::class, 'handle'])->name('github.webhook');
+
+// # test token api
+// Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
+//     return response()->json([
+//         'message' => 'Token valid!',
+//         'user'    => $request->user(),
+//     ]);
+// });

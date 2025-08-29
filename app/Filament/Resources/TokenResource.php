@@ -51,7 +51,7 @@ class TokenResource extends Resource
 
                                 Forms\Components\DateTimePicker::make('expires_at')
                                     ->label('Expired At')
-                                    ->default(now()->addYear())
+                                    ->default(now('Asia/Jakarta')->addYear())
                                     ->required(),
                             ])
                     ])
@@ -75,8 +75,18 @@ class TokenResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('expires_at')
+                    ->label('Expired At')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(function ($record) {
+                        if ($record->expires_at && $record->expires_at->isPast()) {
+                            return 'Token expired';
+                        }
+                        return $record->expires_at ? $record->expires_at->format('M d, Y H:i:s') : '-';
+                    })
+                    ->color(function ($record) {
+                        return $record->expires_at && $record->expires_at->isPast() ? 'danger' : null;
+                    }),
                 Tables\Columns\TextColumn::make('last_used_at')
                     ->dateTime()
                     ->sortable(),
