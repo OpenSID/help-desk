@@ -193,7 +193,7 @@ class ViewTicket extends ViewRecord implements HasForms
                 ->project
                 ->users()
                 ->where('users.id', auth()->user()->id)
-                ->where('role', 'administrator')
+                ->where('project_users.role', 'administrator')
                 ->count() != 0;
     }
 
