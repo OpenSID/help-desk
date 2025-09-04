@@ -31,3 +31,5 @@ Route::post('/github/webhook', [App\Http\Controllers\GitHubWebhookController::cl
 //         'user'    => $request->user(),
 //     ]);
 // });
+
+Route::middleware('auth:sanctum')->get('/ticket/id/{id}', [\App\Http\Controllers\Api\TicketController::class, 'show']);
