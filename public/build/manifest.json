@@ -5,18 +5,18 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app.6518a507.js",
+    "file": "assets/app.af2990ba.js",
     "src": "resources/js/app.js",
     "isEntry": true
   },
-  "resources/css/app.scss": {
-    "file": "assets/app.4c4df009.css",
-    "src": "resources/css/app.scss",
+  "resources/css/filament.scss": {
+    "file": "assets/filament.b399b394.css",
+    "src": "resources/css/filament.scss",
     "isEntry": true
   },
-  "resources/css/filament.scss": {
-    "file": "assets/filament.cf4250ef.css",
-    "src": "resources/css/filament.scss",
+  "resources/css/app.scss": {
+    "file": "assets/app.99c4be01.css",
+    "src": "resources/css/app.scss",
     "isEntry": true
   }
 }
