@@ -1,18 +1,9 @@
 Di rilis v2507.0.0 berisi penambahan fitur dan perbaikan lain sesuai dengan pelayanan ke pelanggan.
 
 #### Penambahan Fitur
-1. [#11](https://github.com/OpenSID/help-desk/issues/11) Fitur : Menambahkan kategori solusi pada tiket.
-2. [#16](https://github.com/OpenSID/help-desk/issues/16) Fitur : notifkasi Telegram Ke DevOps
-3. [#10](https://github.com/OpenSID/help-desk/issues/10) Fitur : Master Aplikasi
-4. [#27](https://github.com/OpenSID/help-desk/pull/27) Fitur : Master Aplikasi
-5. [#19](https://github.com/OpenSID/help-desk/pull/19) Fitur : STatus Tiket Bisa dilihat untuk umum
-6. [#12](https://github.com/OpenSID/help-desk/issues/12) Fitur : Master Milestone
-7. [#22](https://github.com/OpenSID/help-desk/issues/22) Fitur: Menambahkan username github pada data user
-8. [#12](https://github.com/OpenSID/help-desk/issues/21) Fitur: Sinkron tiket ke github service issue dan project
-9. [#13](https://github.com/OpenSID/help-desk/issues/13) Fitur: Laporan Tiket Dalam grafik
-10. [#96](https://github.com/OpenSID/DukunganTeknis/issues/96) Fitur: Modul token untuk API 
 
 #### Perbaikan BUG
+8. [#31](https://github.com/OpenSID/help-desk/issues/31) Perbaikan fitur pencarian tiket
 
 #### Panduan
 

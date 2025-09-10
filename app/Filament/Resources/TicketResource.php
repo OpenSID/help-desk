@@ -388,8 +388,8 @@ class TicketResource extends Resource
                 ->searchable(),
 
             // Kolom kategori
-            Tables\Columns\TextColumn::make('categories')
-                ->label(__('Categories'))
+            Tables\Columns\TextColumn::make('categories.name')
+                ->label(__('Solution Categories'))
                 ->formatStateUsing(
                     fn($record) => view('partials.filament.resources.ticket-category', ['state' => $record->categories])
                 )
@@ -493,7 +493,7 @@ class TicketResource extends Resource
 
                 // Filter kategori
                 Tables\Filters\SelectFilter::make('categories')
-                    ->label(__('Categories'))
+                    ->label(__('Solution Categories'))
                     ->multiple()
                     ->options(fn () => \App\Models\TicketCategory::pluck('name', 'id')->toArray())
                     ->query(function ($query, $data) {
