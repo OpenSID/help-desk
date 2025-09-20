@@ -11,9 +11,6 @@
 
     @vite(['resources/css/app.scss', 'resources/js/app.js'])
 
-    @livewireStyles
-    @livewireScripts
-
 </head>
 <body>
 
