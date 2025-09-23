@@ -12,7 +12,7 @@ class TicketController extends Controller
     /**
      * Cek tiket berdasarkan ID numerik
      */
-    public function show($id, Request $request)
+    public function show($id)
     {
         $ticket = Ticket::with(['owner', 'status', 'project'])->find($id);
 
