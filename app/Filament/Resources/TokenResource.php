@@ -21,10 +21,22 @@ class TokenResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
 
-    // tambahkan ini supaya muncul di MANAGEMENT
     protected static ?int $navigationSort = 5;
-    protected static ?string $navigationGroup = 'Management';
-    protected static ?string $navigationLabel = 'Tokens';
+
+    protected static function getNavigationLabel(): string
+    {
+        return __('Tokens');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return static::getNavigationLabel();
+    }
+
+    protected static function getNavigationGroup(): ?string
+    {
+        return __('Management');
+    }
 
     public static function form(Form $form): Form
     {
