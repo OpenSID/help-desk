@@ -15,6 +15,11 @@ class Report extends Page
         return __('Report');
     }
 
+    public function getTitle(): string
+    {
+        return __('Report');
+    }
+
     public $activeTab = 1;
 
 }
