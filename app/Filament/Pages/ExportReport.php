@@ -135,7 +135,7 @@ class ExportReport extends Page implements Forms\Contracts\HasForms
         $this->saved = true;
 
         Notification::make()
-            ->title('Data berhasil disimpan')
+            ->title(__('Data berhasil disimpan'))
             ->success()
             ->send();
     }
