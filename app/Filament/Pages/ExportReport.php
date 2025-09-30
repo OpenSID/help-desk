@@ -144,7 +144,7 @@ class ExportReport extends Page implements Forms\Contracts\HasForms
     {
         if (! $this->saved) {
             Notification::make()
-                ->title('Isi & simpan data dulu sebelum export')
+                ->title(__('Isi & simpan data dulu sebelum export'))
                 ->danger()
                 ->send();
             return;
