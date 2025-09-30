@@ -6,7 +6,7 @@
 
     <div class="flex mt-4 gap-4">
         <x-filament::button wire:click="save">
-            Simpan
+            {{ __('Save') }}
         </x-filament::button>
 
         <div class="">
