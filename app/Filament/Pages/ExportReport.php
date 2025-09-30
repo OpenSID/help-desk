@@ -120,7 +120,7 @@ class ExportReport extends Page implements Forms\Contracts\HasForms
         // dd($state);
         if (empty($state['month']) || empty($state['year']) || empty($state['completion_report'])) {
             Notification::make()
-                ->title('Isi semua field terlebih dahulu')
+                ->title(__('Isi semua field terlebih dahulu'))
                 ->danger()
                 ->send();
             return;
