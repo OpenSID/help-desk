@@ -96,7 +96,8 @@ class ExportReport extends Page implements Forms\Contracts\HasForms
 
     public function updatedYear(): void
     {
-        $this->updatedMonth(); // biar logika sama
+        $state = $this->form->getState();
+        $this->updatedMonth($state['month'] ?? null, 'month'); // biar logika sama
     }
 
     protected function getMonths(): array
