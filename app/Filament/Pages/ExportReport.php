@@ -88,7 +88,7 @@ class ExportReport extends Page implements Forms\Contracts\HasForms
         $this->form->fill([
             'month' => $state['month'],
             'year' => $state['year'],
-            'completion_report' => $data->completion_report ?? '',
+            'completion_report' => $data ? $data->completion_report : '',
         ]);
 
         $this->saved = $data ? true : false;
