@@ -10,14 +10,17 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\View;
 
 class Scrum extends Page implements HasForms
 {
     use InteractsWithForms, KanbanScrumHelper;
 
-    protected static ?string $navigationIcon = 'heroicon-o-view-boards';
+    protected static ?string $navigationIcon = 'heroicon-o-view-columns';
 
-    protected static ?string $slug = 'scrum/{project}';
+    // protected static ?string $slug = 'scrum/{project}';
+
+    protected static ?string $routeName = 'filament.pages.scrum';
 
     protected static string $view = 'filament.pages.scrum';
 
@@ -28,11 +31,12 @@ class Scrum extends Page implements HasForms
         'closeTicketDialog'
     ];
 
-    public function mount(Project $project)
+    public function mount($project): void
     {
-        $this->project = $project;
+        $this->project = Project::findOrFail($project);
         if ($this->project->type !== 'scrum') {
-            $this->redirect(route('filament.pages.kanban/{project}', ['project' => $project]));
+            $this->redirect("/kanban/{$project}");
+            return;
         } elseif (
             $this->project->owner_id != auth()->user()->id
             &&
@@ -65,12 +69,12 @@ class Scrum extends Page implements HasForms
         ];
     }
 
-    protected function getHeading(): string|Htmlable
+    public function getHeading(): string|Htmlable
     {
         return $this->scrumHeading();
     }
 
-    protected function getSubheading(): string|Htmlable|null
+    public function getSubheading(): string|Htmlable|null
     {
         return $this->scrumSubHeading();
     }
@@ -78,6 +82,14 @@ class Scrum extends Page implements HasForms
     protected function getFormSchema(): array
     {
         return $this->formSchema();
+    }
+
+    public function render(): View
+    {
+        // ✅ Sekarang render manual pakai komponen Filament bawaan
+        return view('filament.pages.kanban', [
+            'project' => $this->project,
+        ]);
     }
 
 }

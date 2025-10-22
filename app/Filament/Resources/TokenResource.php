@@ -5,8 +5,8 @@ namespace App\Filament\Resources;
 use Filament\Forms;
 use Filament\Tables;
 use App\Models\Token;
-use Filament\Resources\Form;
-use Filament\Resources\Table;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
 use Illuminate\Support\Carbon;
 use Filament\Resources\Resource;
 use Filament\Notifications\Notification;
@@ -23,7 +23,7 @@ class TokenResource extends Resource
 
     protected static ?int $navigationSort = 5;
 
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Tokens');
     }
@@ -33,7 +33,7 @@ class TokenResource extends Resource
         return static::getNavigationLabel();
     }
 
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Management');
     }

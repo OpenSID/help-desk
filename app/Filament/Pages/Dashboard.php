@@ -20,13 +20,16 @@ class Dashboard extends Page
     public static ?string $routeName = 'filament.pages.dashboard'; // Tambahkan baris ini
 
     // protected static bool $shouldRegisterNavigation = false;
-    protected static string $view = 'filament::pages.dashboard';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    // protected static string $view = 'filament::pages.dashboard';
+    protected static string $view = 'filament.pages.dashboard';
 
-    protected function getColumns(): int
-    {
-        return 6;
-    }
- 
+
+    // protected function getColumns(): int
+    // {
+    //     return 6;
+    // }
+
 
     protected function getWidgets(): array
     {

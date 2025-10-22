@@ -50,11 +50,19 @@ class CreateTicket extends CreateRecord
      *
      * @param mixed $id
      */
-    public function __construct($id = null)
+    public ?int $id = null;
+
+    public function mount($id = null): void
     {
-        parent::__construct($id);
-        $this->telegram = app(TelegramService::class); // Ambil service dari container Laravel
+        parent::mount($id);
+        $this->id = $id;
+        $this->telegram = app(TelegramService::class);
     }
+    // public function __construct($id = null)
+    // {
+    //     parent::__construct($id);
+    //     $this->telegram = app(TelegramService::class); // Ambil service dari container Laravel
+    // }
 
     /**
      * Memodifikasi data form sebelum proses create.

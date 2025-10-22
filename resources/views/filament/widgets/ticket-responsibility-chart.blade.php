@@ -17,34 +17,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            let ticketResponsibilityChart = null;
 
-            function renderResponsibilityChart(labels, datasets) {
-                const ctx = document.getElementById('ticketResponsibilityChart').getContext('2d');
-
-                if (ticketResponsibilityChart) {
-                    ticketResponsibilityChart.destroy();
-                }
-
-                ticketResponsibilityChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: datasets
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: true } }
-                    }
-                });
-            }
-
-            window.addEventListener("updateResponsibilityChart", event => {
-                renderResponsibilityChart(event.detail.labels, event.detail.datasets);
-            });
-            window.addEventListener("renderResponsibilityChart", event => {
-                renderResponsibilityChart(event.detail.labels, event.detail.datasets);
-            }, { once: true });
         </script>
 
     </x-filament::card>

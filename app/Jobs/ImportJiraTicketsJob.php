@@ -76,7 +76,7 @@ class ImportJiraTicketsJob implements ShouldQueue
             }
             FilamentNotification::make()
                 ->title(__('Jira importation'))
-                ->icon('heroicon-o-cloud-download')
+                ->icon('heroicon-o-arrow-down-tray')
                 ->body(__('Jira tickets successfully imported'))
                 ->sendToDatabase($this->user);
         }

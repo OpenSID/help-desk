@@ -17,16 +17,16 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TicketCategoryResource\Pages;
 use App\Models\TicketCategory;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;
 use Filament\Tables;
 
 class TicketCategoryResource extends Resource
 {
     protected static ?string $model = TicketCategory::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 5;
 
@@ -35,7 +35,7 @@ class TicketCategoryResource extends Resource
      *
      * @return string Label navigasi (diterjemahkan)
      */
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Solution Categories');
     }
@@ -55,7 +55,7 @@ class TicketCategoryResource extends Resource
      *
      * @return string|null Nama grup navigasi (diterjemahkan)
      */
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Referential');
     }

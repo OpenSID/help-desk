@@ -22,16 +22,27 @@ class TicketResponsibilityChart extends Widget implements HasForms
         return __('Trend by responsible');
     }
 
-    public ?array $formData = [];
+    // ✅ deklarasi semua properti Livewire
+    public int $start_month;
+    public int $start_year;
+    public int $end_month;
+    public int $end_year;
+    public int $responsibility_id;
 
     public function mount(): void
     {
+        $this->start_month          = now()->subMonths(2)->month;
+        $this->start_year           = now()->subMonths(2)->year;
+        $this->end_month            = now()->month;
+        $this->end_year             = now()->year;
+        $this->resposibility_id     = 0; // Default to 'Semua'
+
         $this->form->fill([
-            'start_month' => now()->subMonths(2)->month,
-            'start_year'  => now()->subMonths(2)->year,
-            'end_month'   => now()->month,
-            'end_year'    => now()->year,
-            'responsibility_id'    => 0, // Default to 'Semua'
+            'start_month' => $this->start_month,
+            'start_year'  => $this->start_year,
+            'end_month'   => $this->end_month,
+            'end_year'    => $this->end_year,
+            'responsibility_id'    => $this->resposibility_id // Default to 'Semua'
         ]);
     }
 
@@ -173,7 +184,7 @@ class TicketResponsibilityChart extends Widget implements HasForms
     {
         $chartData = $this->getChartData();
 
-        $this->dispatchBrowserEvent('updateResponsibilityChart', [
+        $this->dispatch('updateResponsibilityChart', [
             'labels' => $chartData['labels'],
             'datasets' => collect($chartData['series'])->map(function ($s, $i) {
                 $colors = ['#3b82f6', '#10b981', '#f59e0b', '#ffc0cb']; // biru, hijau, kuning, pink
@@ -190,7 +201,7 @@ class TicketResponsibilityChart extends Widget implements HasForms
     {
         $chartData = $this->getChartData();
 
-        $this->dispatchBrowserEvent('renderResponsibilityChart', [
+        $this->dispatch('renderResponsibilityChart', [
             'labels' => $chartData['labels'],
             'datasets' => collect($chartData['series'])->map(function ($s, $i) {
                 $colors = ['#3b82f6', '#10b981', '#f59e0b'];

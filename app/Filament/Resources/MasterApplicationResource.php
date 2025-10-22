@@ -6,9 +6,9 @@ use App\Filament\Resources\MasterApplicationResource\Pages;
 use App\Filament\Resources\MasterApplicationResource\RelationManagers;
 use App\Models\MasterApplication;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -21,7 +21,7 @@ class MasterApplicationResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Master Application');
     }
@@ -31,7 +31,7 @@ class MasterApplicationResource extends Resource
         return static::getNavigationLabel();
     }
 
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Referential');
     }

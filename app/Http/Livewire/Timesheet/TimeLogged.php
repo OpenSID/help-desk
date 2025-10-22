@@ -11,12 +11,23 @@ use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
+use Filament\Support\Contracts\TranslatableContentDriver;
 
 class TimeLogged extends Component implements HasTable
 {
     use InteractsWithTable;
 
     public Ticket $ticket;
+
+    /**
+     * Implementasi method baru untuk HasTable di Filament v3
+     */
+    public function makeFilamentTranslatableContentDriver(): ?TranslatableContentDriver
+    {
+        // Jika tidak pakai multi-language, cukup return null
+        return null;
+    }
+
 
     protected function getFormModel(): Model|string|null
     {

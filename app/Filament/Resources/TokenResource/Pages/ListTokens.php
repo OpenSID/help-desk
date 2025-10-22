@@ -10,7 +10,7 @@ class ListTokens extends ListRecords
 {
     protected static string $resource = TokenResource::class;
 
-    protected function getFooter(): ?\Illuminate\Contracts\View\View
+    public function getFooter(): ?\Illuminate\Contracts\View\View
     {
         return view('filament.resources.token-resource.copy-token');
     }

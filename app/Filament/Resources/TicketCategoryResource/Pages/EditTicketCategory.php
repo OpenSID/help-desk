@@ -27,7 +27,7 @@ class EditTicketCategory extends EditRecord
      *
      * @return string Judul halaman (diterjemahkan)
      */
-    protected function getTitle(): string
+    public function getTitle(): string
     {
         return __('Edit Solution Categories');
     }

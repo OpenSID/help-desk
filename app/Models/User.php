@@ -14,22 +14,29 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use JeffGreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
+// use JeffGreco13\FilamentBreezy\Traits\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use ProtoneMedia\LaravelVerifyNewEmail\MustVerifyNewEmail;
 use Ramsey\Uuid\Uuid;
 use Spatie\Permission\Traits\HasRoles;
+use Filament\Panel;
 
 class User extends Authenticatable implements MustVerifyEmail, FilamentUser
 {
     use HasApiTokens,
         HasFactory,
         Notifiable,
-        TwoFactorAuthenticatable,
+        // TwoFactorAuthenticatable,
         HasRoles,
         HasAvatarUrl,
         SoftDeletes,
         MustVerifyNewEmail;
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Contoh paling sederhana: izinkan semua user
+        return true;
+    }
 
     /**
      * The attributes that are mass assignable.

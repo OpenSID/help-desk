@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ config('app.locale') }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8">
@@ -10,6 +10,7 @@
 
     <title>{{ config('app.name') }} {{ isset($title) ? ' - ' . $title : '' }}</title>
 
+    @filamentStyles
     @vite(['resources/css/app.scss', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     @livewireStyles
@@ -21,6 +22,7 @@
 
     {{ $slot }}
 
+    @filamentScripts
     <script src="{{ asset('js/chart.min.js') }}"></script>
     @stack('scripts')
 

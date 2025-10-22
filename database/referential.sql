@@ -11,7 +11,7 @@ INSERT INTO `ticket_statuses` (`id`, `name`, `color`, `is_default`, `deleted_at`
 
 INSERT INTO `ticket_types` (`id`, `name`, `icon`, `color`, `is_default`, `deleted_at`, `created_at`, `updated_at`) VALUES
 (1, 'Task', 'heroicon-o-check-circle', '#00FFFF', 1, NULL, '2022-11-14 12:06:56', '2022-11-14 12:06:56'),
-(2, 'Evolution', 'heroicon-o-clipboard-list', '#008000', 0, NULL, '2022-11-14 12:06:56', '2022-11-14 12:06:56'),
+(2, 'Evolution', 'heroicon-o-clipboard-document-list', '#008000', 0, NULL, '2022-11-14 12:06:56', '2022-11-14 12:06:56'),
 (3, 'Bug', 'heroicon-o-x', '#ff0000', 0, NULL, '2022-11-14 12:06:56', '2022-11-14 12:06:56');
 
 
