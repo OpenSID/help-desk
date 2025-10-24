@@ -16,6 +16,7 @@ use Livewire\Component;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use Filament\Support\Contracts\TranslatableContentDriver;
 
 class TicketStatuses extends Component implements HasTable
 {
@@ -24,6 +25,15 @@ class TicketStatuses extends Component implements HasTable
     public $selectedStatus;
 
     protected $listeners = ['statusSaved', 'statusDeleted'];
+
+    /**
+     * Implementasi method baru untuk HasTable di Filament v3
+     */
+    public function makeFilamentTranslatableContentDriver(): ?TranslatableContentDriver
+    {
+        // Jika tidak pakai multi-language, cukup return null
+        return null;
+    }
 
     public function render()
     {
@@ -99,7 +109,7 @@ class TicketStatuses extends Component implements HasTable
             ExportAction::make()
                 ->label(__('Export'))
                 ->color('success')
-                ->icon('heroicon-o-document-download')
+                ->icon('heroicon-o-document-arrow-down')
                 ->exports([
                     ExcelExport::make()
                         ->askForWriterType()

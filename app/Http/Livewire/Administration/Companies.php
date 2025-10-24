@@ -20,6 +20,7 @@ use Maatwebsite\Excel\Excel;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use Filament\Support\Contracts\TranslatableContentDriver;
 
 class Companies extends Component implements HasTable
 {
@@ -28,6 +29,15 @@ class Companies extends Component implements HasTable
     public $selectedCompany;
 
     protected $listeners = ['companySaved', 'companyDeleted'];
+
+    /**
+     * Implementasi method baru untuk HasTable di Filament v3
+     */
+    public function makeFilamentTranslatableContentDriver(): ?TranslatableContentDriver
+    {
+        // Jika tidak pakai multi-language, cukup return null
+        return null;
+    }
 
     public function render()
     {
@@ -124,7 +134,7 @@ class Companies extends Component implements HasTable
             ExportAction::make()
                 ->label(__('Export'))
                 ->color('success')
-                ->icon('heroicon-o-document-download')
+                ->icon('heroicon-o-document-arrow-down')
                 ->exports([
                     ExcelExport::make()
                         ->askForWriterType()

@@ -8,6 +8,8 @@ use App\Http\Controllers\RoadMap\DataController;
 use App\Http\Controllers\Auth\OidcAuthController;
 use App\Http\Controllers\Public\PublicTicketController;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use App\Filament\Pages\Kanban;
+use App\Filament\Pages\Scrum;
 
 Route::view('/', 'index')->name('home');
 // Route::redirect('/dashboard', '/admin/dashboard') ;
@@ -16,7 +18,7 @@ Route::view('/', 'index')->name('home');
 // Route::get('/dashboard', function () {
 //     return redirect()->to(route('filament.pages.board'));
 // })->name('filament.pages.dashboard');
- 
+
 Route::get('captcha', function () {
     return captcha_img('flat');
 });
@@ -53,3 +55,6 @@ Route::name('oidc.')
         Route::get('redirect', [OidcAuthController::class, 'redirect'])->name('redirect');
         Route::get('callback', [OidcAuthController::class, 'callback'])->name('callback');
     });
+
+// Route::get('/kanban/{project}', Kanban::class)->name('filament.pages.kanban');
+// Route::get('/scrum/{project}', Scrum::class)->name('filament.pages.scrum');

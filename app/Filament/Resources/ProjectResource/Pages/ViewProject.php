@@ -18,13 +18,13 @@ class ViewProject extends ViewRecord
                     fn ()
                     => ($this->record->type === 'scrum' ? __('Scrum board') : __('Kanban board'))
                 )
-                ->icon('heroicon-o-view-boards')
+                ->icon('heroicon-o-view-columns')
                 ->color('secondary')
                 ->url(function () {
                     if ($this->record->type === 'scrum') {
-                        return route('filament.pages.scrum/{project}', ['project' => $this->record->id]);
+                        return route('filament.pages.scrum', ['project' => $this->record->id]);
                     } else {
-                        return route('filament.pages.kanban/{project}', ['project' => $this->record->id]);
+                        return route('filament.pages.kanban', ['project' => $this->record->id]);
                     }
                 }),
 

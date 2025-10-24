@@ -20,16 +20,16 @@ class WeeklyReport extends BarChartWidget
         'lg' => 3
     ];
 
-    public function __construct($id = null)
+    public function mount($id = null) : void
     {
         $weekDaysData = $this->getWeekStartAndFinishDays();
 
         $this->filter = $weekDaysData['weekStartDate'] . ' - ' . $weekDaysData['weekEndDate'];
 
-        parent::__construct($id);
+        // parent::__construct($id);
     }
 
-    protected function getHeading(): string
+    public function getHeading(): string
     {
         return __('Weekly logged time');
     }

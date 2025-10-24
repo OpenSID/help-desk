@@ -6,9 +6,9 @@ use App\Filament\Resources\IssueSourceResource\Pages;
 use App\Filament\Resources\IssueSourceResource\RelationManagers;
 use App\Models\IssueSource;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -17,11 +17,11 @@ class IssueSourceResource extends Resource
 {
     protected static ?string $model = IssueSource::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 7;
 
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Issue Source');
     }
@@ -31,7 +31,7 @@ class IssueSourceResource extends Resource
         return static::getNavigationLabel();
     }
 
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Referential');
     }

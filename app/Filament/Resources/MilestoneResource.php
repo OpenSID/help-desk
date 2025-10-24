@@ -6,9 +6,9 @@ use App\Filament\Resources\MilestoneResource\Pages;
 use App\Filament\Resources\MilestoneResource\RelationManagers;
 use App\Models\Milestone;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -23,11 +23,12 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ColorPicker;
 
+
 class MilestoneResource extends Resource
 {
     protected static ?string $model = Milestone::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 6;
 
@@ -36,7 +37,7 @@ class MilestoneResource extends Resource
      *
      * @return string Label navigasi (diterjemahkan)
      */
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Milestone');
     }
@@ -56,7 +57,7 @@ class MilestoneResource extends Resource
      *
      * @return string|null Nama grup navigasi (diterjemahkan)
      */
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Referential');
     }

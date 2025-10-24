@@ -1,8 +1,32 @@
-@import '../../vendor/filament/filament/resources/css/app.css';
+@import "../../vendor/filament/support/dist/index.css";
+@import "../../vendor/filament/filament/resources/css/theme.css";
+@import "../../vendor/filament/filament/resources/css/index.css";
 
 @import './kanban';
 @import './dialogs';
 @import './loading.io';
+
+.fi-layout>aside {
+    background-color: white;
+    box-shadow: 15px 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.disabled-pointer img[data-popover-target] {
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
+.fi-section {
+    height: 100%;
+}
+
+.fi-ta-content {
+    overflow-y: hidden;
+}
+
+.fi-wi-widget {
+    margin: 20px
+}
 
 .filament-header-heading {
     display: block;
@@ -51,3 +75,5 @@
 label:has(.sprint-checkboxes) > span {
     width: 100%;
 }
+
+

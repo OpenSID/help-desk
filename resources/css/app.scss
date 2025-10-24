@@ -1,10 +1,12 @@
 @use 'media-queries' as *;
 
-@import '../../vendor/filament/forms/dist/module.esm.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind variants;
+
+@import './filament';
 
 .main-menu {
     @apply transition-all relative z-40;

@@ -10,74 +10,81 @@
 <x-filament::page>
 
     {{-- Tombol kembali ke kanban board --}}
-    <a href="{{ route('filament.pages.kanban/{project}', ['project' => $record->project->id]) }}"
+    {{-- <a href="{{ route('filament.admin.pages.kanban', ['project' => $record->project->id]) }}"
        class="flex items-center gap-1 text-gray-500 hover:text-gray-700 font-medium text-xs">
         <x-heroicon-o-arrow-left class="w-4 h-4"/> {{ __('Back to kanban board') }}
-    </a>
+    </a> --}}
 
     <div class="w-full flex md:flex-row flex-col gap-5">
 
         {{-- Kartu utama detail tiket --}}
-        <x-filament::card class="md:w-2/3 w-full flex flex-col gap-5">
-            <div class="w-full flex flex-col gap-0">
-                {{-- Header: kode, project, nama tiket --}}
-                <div class="flex items-center gap-2">
-                    <span class="flex items-center gap-1 text-sm text-primary-500 font-medium">
-                        <x-heroicon-o-ticket class="w-4 h-4"/>
-                        {{ $record->code }}
-                    </span>
-                    <span class="text-sm text-gray-400 font-light">|</span>
-                    <span class="flex items-center gap-1 text-sm text-gray-500">
-                        {{ $record->project->name }}
-                    </span>
-                </div>
-                <span class="text-xl text-gray-700">
-                    {{ $record->name }}
-                </span>
+        <div class="md:w-2/3 w-full h-full flex flex-col gap-5">
+            <div class="h-full">
+                <x-filament::card class="h-full">
+                    <div class="w-full flex flex-col gap-0">
+                        {{-- Header: kode, project, nama tiket --}}
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center gap-1 text-sm text-primary-500 font-medium">
+                                <x-heroicon-o-ticket class="w-4 h-4"/>
+                                {{ $record->code }}
+                            </span>
+                            <span class="text-sm text-gray-400 font-light">|</span>
+                            <span class="flex items-center gap-1 text-sm text-gray-500">
+                                {{ $record->project->name }}
+                            </span>
+                        </div>
+                        <span class="text-xl text-gray-700">
+                            {{ $record->name }}
+                        </span>
+                    </div>
+                    <div class="w-full flex items-center gap-2">
+                        @if($record->status)
+                        <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
+                            style="background-color: {{ $record->status->color ?? '#6b7280' }};">
+                            {{ $record->status->name ?? 'Unknown' }}
+                        </div>
+                        @endif
+                        @if($record->priority)
+                        <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
+                            style="background-color: {{ $record->priority->color ?? '#6b7280' }};">
+                            {{ $record->priority->name ?? 'Unknown' }}
+                        </div>
+                        @endif
+                        @if($record->type)
+                        <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
+                            style="background-color: {{ $record->type->color ?? '#6b7280' }};">
+                            <x-icon class="h-3 text-white" name="{{ $record->type->icon ?? 'heroicon-o-tag' }}"/>
+                            <span class="ml-2">
+                                {{ $record->type->name ?? 'Unknown' }}
+                            </span>
+                        </div>
+                        @endif
+                    </div>
+                    <div class="w-full flex flex-col gap-0 pt-5">
+                        {{-- Konten tiket --}}
+                        <span class="text-gray-500 text-sm font-medium">
+                            {{ __('Content') }}
+                        </span>
+                        <div class="w-full prose">
+                            {!! $record->content !!}
+                        </div>
+                    </div>
+                </x-filament::card>
             </div>
-            <div class="w-full flex items-center gap-2">
-                @if($record->status)
-                <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
-                     style="background-color: {{ $record->status->color ?? '#6b7280' }};">
-                    {{ $record->status->name ?? 'Unknown' }}
-                </div>
-                @endif
-                @if($record->priority)
-                <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
-                     style="background-color: {{ $record->priority->color ?? '#6b7280' }};">
-                    {{ $record->priority->name ?? 'Unknown' }}
-                </div>
-                @endif
-                @if($record->type)
-                <div class="px-2 py-1 rounded flex items-center justify-center text-center text-xs text-white"
-                     style="background-color: {{ $record->type->color ?? '#6b7280' }};">
-                    <x-icon class="h-3 text-white" name="{{ $record->type->icon ?? 'heroicon-o-tag' }}"/>
-                    <span class="ml-2">
-                        {{ $record->type->name ?? 'Unknown' }}
-                    </span>
-                </div>
-                @endif
-            </div>
-            <div class="w-full flex flex-col gap-0 pt-5">
-                {{-- Konten tiket --}}
-                <span class="text-gray-500 text-sm font-medium">
-                    {{ __('Content') }}
-                </span>
-                <div class="w-full prose">
-                    {!! $record->content !!}
-                </div>
-            </div>
-        </x-filament::card>
+        </div>
 
         {{-- Kartu info samping: owner, responsible, sprint/epic, kategori, estimasi, waktu log, subscriber, tanggal, relasi --}}
-        <x-filament::card class="md:w-1/3 w-full flex flex-col">
+       <div></div>
+        <x-filament::card class="">
             {{-- Owner --}}
             <div class="w-full flex flex-col gap-1" wire:ignore>
                 <span class="text-gray-500 text-sm font-medium">
                     {{ __('Owner') }}
                 </span>
                 <div class="w-full flex items-center gap-1 text-gray-500">
-                    <x-user-avatar :user="$record->owner"/>
+                    <div class="h-10 w-10 flex items-center">
+                        <x-user-avatar :user="$record->owner"/>
+                    </div>
                     {{ $record->owner->name }}
                 </div>
             </div>
@@ -89,7 +96,9 @@
                 </span>
                 <div class="w-full flex items-center gap-1 text-gray-500">
                     @if($record->responsible)
-                        <x-user-avatar :user="$record->responsible"/>
+                        <div class="h-10 w-10 flex items-center">
+                            <x-user-avatar :user="$record->responsible"/>
+                        </div>
                     @endif
                     {{ $record->responsible?->name ?? '-' }}
                 </div>

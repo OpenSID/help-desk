@@ -17,38 +17,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            let ticketServiceChart = null;
 
-            function renderServiceChart(labels, data) {
-                const ctx = document.getElementById('ticketServiceChart').getContext('2d');
-
-                if (ticketServiceChart) {
-                    ticketServiceChart.destroy();
-                }
-
-                ticketServiceChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Jumlah Tiket',
-                            data: data,
-                            backgroundColor: '#3b82f6',
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { display: true } }
-                    }
-                });
-            }
-
-            window.addEventListener("updateServiceChart", event => {
-                renderServiceChart(event.detail.labels, event.detail.data);
-            });
-            window.addEventListener("renderServiceChart", event => {
-                renderServiceChart(event.detail.labels, event.detail.data);
-            }, { once: true });
         </script>
 
     </x-filament::card>

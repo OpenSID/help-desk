@@ -4,22 +4,22 @@
         <x-slot:title>{{$title}}</x-slot:title>
     @endisset
 
-    <div class="absolute w-full h-full top-0 left-0 right-0 bottom-0 overflow-hidden">
+    <div class="flex w-full h-screen overflow-hidden">
         <div
-            class="absolute lg:w-1/2 md:w-1/3 lg:flex md:flex hidden flex-col justify-start
-            items-start top-0 bottom-0 left-0 bg-primary-700 bg-cover bg-no-repeat
-            bg-left-bottom bg-opacity-90"
-            style="background-image: url('{{ asset('images/help-desk.png') }}'); background-size: 80%">
+            class="w-full bg-primary-700 bg-contain bg-no-repeat bg-bottom"
+            style="background-image: url('{{ asset('images/help-desk.png') }}'); ">
         </div>
         <div
-            class="absolute lg:w-1/2 md:w-2/3 xl:p-44 lg:p-32 md:p-24 p-20 flex flex-col justify-center
-            items-center top-0 bottom-0 right-0 bg-white overflow-y-auto"
+            class="w-full flex flex-col justify-center items-center bg-white"
         >
-            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="mb-5 w-56" />
-            {{$slot}}
+            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" class="mt-10 w-56" />
+
+            <div class="w-full overflow-y-auto">
+                {{$slot}}
+            </div>
 
             {{-- Tombol Login Admin di tengah --}}
-            <div class="mt-10 flex justify-center">
+            <div class="mb-10 flex justify-center">
                 <a href="{{ url('/login') }}"
                    class="flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-full shadow-lg hover:bg-blue-800 transition font-semibold text-lg"
                    title="Login Admin">

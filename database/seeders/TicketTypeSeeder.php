@@ -10,19 +10,19 @@ class TicketTypeSeeder extends Seeder
     private array $data = [
         [
             'name' => 'Task',
-            'icon' => 'heroicon-o-check-circle',
+            'icon' => 'heroicon-o-clipboard-document-list',
             'color' => '#00FFFF',
             'is_default' => true
         ],
         [
             'name' => 'Evolution',
-            'icon' => 'heroicon-o-clipboard-list',
+            'icon' => 'heroicon-o-clipboard-document-list',
             'color' => '#008000',
             'is_default' => false
         ],
         [
             'name' => 'Bug',
-            'icon' => 'heroicon-o-x',
+            'icon' => 'heroicon-o-clipboard-document-list',
             'color' => '#ff0000',
             'is_default' => false
         ],

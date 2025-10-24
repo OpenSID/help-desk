@@ -26,8 +26,8 @@ class CreateTicketCategory extends CreateRecord
      *
      * @return string Judul halaman (diterjemahkan)
      */
-    protected function getTitle(): string
+    public function getTitle(): string
     {
-        return __('Crete Solution Categories');
+        return __('Create Solution Categories');
     }
 }

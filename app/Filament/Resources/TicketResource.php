@@ -12,11 +12,11 @@ use App\Models\TicketStatus;
 use App\Models\TicketType;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
 use App\Models\MasterApplication;
@@ -24,6 +24,7 @@ use App\Models\TicketCategory;
 use App\Models\Milestone;
 use Carbon\Carbon;
 use App\Models\IssueSource;
+use Filament\Tables\Columns\ViewColumn;
 
 class TicketResource extends Resource
 {
@@ -38,7 +39,7 @@ class TicketResource extends Resource
      *
      * @return string Label navigasi (diterjemahkan)
      */
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Tickets');
     }
@@ -58,7 +59,7 @@ class TicketResource extends Resource
      *
      * @return string|null Nama grup navigasi (diterjemahkan)
      */
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Management');
     }
@@ -252,6 +253,13 @@ class TicketResource extends Resource
                         Forms\Components\RichEditor::make('content')
                             ->label(__('Ticket content'))
                             ->required()
+                            ->default('') // aman untuk form create
+                            ->afterStateHydrated(function (?string $state, $set) {
+                                if (blank($state) || $state === 'undefined') {
+                                    $set('content', '');
+                                }
+                            })
+                            ->dehydrated(true)
                             ->columnSpan(2),
 
                         // Grid estimasi waktu
@@ -340,18 +348,38 @@ class TicketResource extends Resource
                 ->searchable(),
 
             // Kolom owner
-            Tables\Columns\TextColumn::make('owner.name')
+            // Tables\Columns\TextColumn::make('owner.name')
+            //     ->label(__('Owner'))
+            //     ->sortable()
+            //     ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->owner]))
+            //     ->searchable(),
+            ViewColumn::make('owner')
                 ->label(__('Owner'))
+                ->view('components.user-avatar')
+                ->viewData(fn ($record) => [
+                    'user' => $record->owner, // kirim variabel $user persis seperti sebelumnya
+                    'record' => $record,      // opsional kalau view kamu masih butuh $record
+                ])
                 ->sortable()
-                ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->owner]))
-                ->searchable(),
+                ->searchable()
+                ->disabledClick(),
 
             // Kolom penanggung jawab
-            Tables\Columns\TextColumn::make('responsible.name')
+            // Tables\Columns\TextColumn::make('responsible.name')
+            //     ->label(__('Responsible'))
+            //     ->sortable()
+            //     ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->responsible]))
+            //     ->searchable(),
+            ViewColumn::make('responsible')
                 ->label(__('Responsible'))
+                ->view('components.user-avatar')
+                ->viewData(fn ($record) => [
+                    'user' => $record->responsible, // kirim variabel $user persis seperti sebelumnya
+                    'record' => $record,      // opsional kalau view kamu masih butuh $record
+                ])
                 ->sortable()
-                ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->responsible]))
-                ->searchable(),
+                ->searchable()
+                ->disabledClick(),
 
             // Kolom status
             Tables\Columns\TextColumn::make('status.name')

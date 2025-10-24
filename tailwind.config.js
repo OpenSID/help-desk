@@ -1,7 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 const colors = require('tailwindcss/colors')
 
+import preset from './vendor/filament/support/tailwind.config.preset'
+
 module.exports = {
+    presets: [preset],
     content: [
         './resources/**/*.blade.php',
         './app/Filament/**/*.php',
@@ -19,6 +22,9 @@ module.exports = {
                 warning: colors.yellow,
             },
         },
+        corePlugins: {
+            preflight: true,
+        }
     },
     plugins: [
         require('@tailwindcss/forms'),

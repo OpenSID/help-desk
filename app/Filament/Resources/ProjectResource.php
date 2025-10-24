@@ -12,23 +12,24 @@ use App\Models\Ticket;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Forms;
-use Filament\Resources\Form;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Resources\Table;
+use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class ProjectResource extends Resource
 {
     protected static ?string $model = Project::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-archive';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
 
     protected static ?int $navigationSort = 1;
 
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('Projects');
     }
@@ -38,7 +39,7 @@ class ProjectResource extends Resource
         return static::getNavigationLabel();
     }
 
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Management');
     }
@@ -52,9 +53,12 @@ class ProjectResource extends Resource
                         Forms\Components\Grid::make()
                             ->columns(3)
                             ->schema([
-                                Forms\Components\SpatieMediaLibraryFileUpload::make('cover')
+                                SpatieMediaLibraryFileUpload::make('cover')
                                     ->label(__('Cover image'))
+                                    ->collection('cover')
                                     ->image()
+                                    ->visibility('public')
+                                    ->previewable(true)
                                     ->helperText(
                                         __('If not selected, an image will be generated based on the project name')
                                     )
@@ -178,14 +182,19 @@ class ProjectResource extends Resource
                     ->limit(2),
 
                 Tables\Columns\BadgeColumn::make('type')
-                    ->enum([
-                        'kanban' => __('Kanban'),
-                        'scrum' => __('Scrum')
-                    ])
+                    // ->enum([
+                    //     'kanban' => __('Kanban'),
+                    //     'scrum' => __('Scrum')
+                    // ])
                     ->colors([
                         'secondary' => 'kanban',
                         'warning' => 'scrum',
-                    ]),
+                    ])
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'kanban' => __('Kanban'),
+                        'scrum' => __('Scrum'),
+                        default => ucfirst($state),
+                    }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created at'))
@@ -233,7 +242,7 @@ class ProjectResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('exportLogHours')
                         ->label(__('Export hours'))
-                        ->icon('heroicon-o-document-download')
+                        ->icon('heroicon-o-document-arrow-down')
                         ->color('secondary')
                         ->action(fn($record) => Excel::download(
                             new ProjectHoursExport($record),
@@ -247,13 +256,13 @@ class ProjectResource extends Resource
                             fn ($record)
                                 => ($record->type === 'scrum' ? __('Scrum board') : __('Kanban board'))
                         )
-                        ->icon('heroicon-o-view-boards')
+                        ->icon('heroicon-o-view-columns')
                         ->color('secondary')
                         ->url(function ($record) {
                             if ($record->type === 'scrum') {
-                                return route('filament.pages.scrum/{project}', ['project' => $record->id]);
+                                return "/kanban/{$record->id}";
                             } else {
-                                return route('filament.pages.kanban/{project}', ['project' => $record->id]);
+                                return "/scrum/{$record->id}";
                             }
                         }),
                 ])->color('secondary'),

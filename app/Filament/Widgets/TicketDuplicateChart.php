@@ -21,13 +21,18 @@ class TicketDuplicateChart extends Widget implements HasForms
         return __('Trend duplicates');
     }
 
-    public ?array $formData = [];
+    // ✅ deklarasi semua properti Livewire
+    public int $month;
+    public int $year;
 
     public function mount(): void
     {
+        $this->month  = now()->month;
+        $this->year   = now()->year;
+
         $this->form->fill([
-            'month'   => now()->month,
-            'year'    => now()->year,
+            'month'   => $this->month,
+            'year'    => $this->year,
         ]);
     }
 
@@ -80,7 +85,7 @@ class TicketDuplicateChart extends Widget implements HasForms
         return [
             'labels' => $tickets->pluck('relation_id')->map(fn ($id) => 'ID Tiket : ' . $id)->values(),
             'data'   => $tickets->pluck('total'),
-            'urls'   => $tickets->pluck('relation_id')->map(fn ($id) => route('filament.resources.tickets.view', $id)),
+            'urls'   => $tickets->pluck('relation_id')->map(fn ($id) => route('filament.admin.resources.tickets.view', ['record' => $id])),
         ];
     }
 
@@ -94,7 +99,7 @@ class TicketDuplicateChart extends Widget implements HasForms
     {
         $chartData = $this->getChartData();
 
-        $this->dispatchBrowserEvent('updateDuplicateChart', [
+        $this->dispatch('updateDuplicateChart', [
             'labels' => $chartData['labels']->toArray(),
             'data'   => $chartData['data']->toArray(),
             'urls'   => $chartData['urls']->toArray(),
@@ -105,7 +110,7 @@ class TicketDuplicateChart extends Widget implements HasForms
     {
         $chartData = $this->getChartData();
 
-        $this->dispatchBrowserEvent('renderDuplicateChart', [
+        $this->dispatch('renderDuplicateChart', [
             'labels' => $chartData['labels']->toArray(),
             'data'   => $chartData['data']->toArray(),
             'urls'   => $chartData['urls']->toArray(),

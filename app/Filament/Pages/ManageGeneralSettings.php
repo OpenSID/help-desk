@@ -14,6 +14,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Pages\Actions\Action;
 use Filament\Pages\SettingsPage;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\DB;
+use Filament\Notifications\Notification;
 
 class ManageGeneralSettings extends SettingsPage
 {
@@ -21,22 +23,22 @@ class ManageGeneralSettings extends SettingsPage
 
     protected static string $settings = GeneralSettings::class;
 
-    protected static function shouldRegisterNavigation(): bool
+    public static function shouldRegisterNavigation(): bool
     {
         return auth()->user()->can('Manage general settings');
     }
 
-    protected function getHeading(): string|Htmlable
+    public function getHeading(): string|Htmlable
     {
         return __('Manage general settings');
     }
 
-    protected static function getNavigationLabel(): string
+    public static function getNavigationLabel(): string
     {
         return __('General');
     }
 
-    protected static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): ?string
     {
         return __('Settings');
     }
@@ -97,9 +99,26 @@ class ManageGeneralSettings extends SettingsPage
         ];
     }
 
-    protected function getSaveFormAction(): Action
+    public function getSaveFormAction(): Action
     {
-        return parent::getSaveFormAction()->label(__('Save'));
+        // return parent::getSaveFormAction()->label(__('Save'));
+        return Action::make('save')
+            ->label('Save Settings')
+            ->action(function (array $data) {
+                $data = $this->form->getState();
+                foreach ($data as $key => $value) {
+                    DB::table('settings')
+                        ->updateOrInsert(
+                            ['name' => $key],
+                            ['payload' => json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]
+                        );
+                }
+                // ✅ tampilkan notifikasi sukses
+                Notification::make()
+                    ->title('Pengaturan berhasil disimpan!')
+                    ->success()
+                    ->send();
+            });
     }
 
     private function getLanguages(): array

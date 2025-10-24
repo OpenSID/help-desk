@@ -36,10 +36,16 @@ class ViewTicket extends ViewRecord implements HasForms
 
     public $selectedCommentId;
 
+    public $comment;
+
     public function mount($record): void
     {
         parent::mount($record);
-        $this->form->fill();
+
+        $this->comment = '';
+        $this->form->fill([
+            'comment' => $this->comment
+        ]);
     }
 
     protected function getActions(): array
@@ -65,19 +71,29 @@ class ViewTicket extends ViewRecord implements HasForms
                             ->first()
                     ) {
                         $sub->delete();
-                        $this->notify('success', __('You unsubscribed from the ticket'));
+                        // $this->notify('success', __('You unsubscribed from the ticket'));
+                        // ✅ tampilkan notifikasi sukses
+                        Notification::make()
+                            ->title(__('You unsubscribed from the ticket'))
+                            ->success()
+                            ->send();
                     } else {
                         TicketSubscriber::create([
                             'user_id' => auth()->user()->id,
                             'ticket_id' => $this->record->id
                         ]);
-                        $this->notify('success', __('You subscribed to the ticket'));
+                        // $this->notify('success', __('You subscribed to the ticket'));
+                        // ✅ tampilkan notifikasi sukses
+                        Notification::make()
+                            ->title( __('You subscribed to the ticket'))
+                            ->success()
+                            ->send();
                     }
                     $this->record->refresh();
                 }),
             Actions\Action::make('share')
                 ->label(__('Share'))
-                ->color('secondary')
+                ->color('primary')
                 ->button()
                 ->icon('heroicon-o-share')
                 ->action(fn() => $this->dispatchBrowserEvent('shareTicket', [
@@ -123,12 +139,17 @@ class ViewTicket extends ViewRecord implements HasForms
                         'comment' => $comment
                     ]);
                     $this->record->refresh();
-                    $this->notify('success', __('Time logged into ticket'));
+                    // $this->notify('success', __('Time logged into ticket'));
+                    // ✅ tampilkan notifikasi sukses
+                    Notification::make()
+                        ->title(__('Time logged into ticket'))
+                        ->success()
+                        ->send();
                 }),
             Actions\ActionGroup::make([
                 Actions\Action::make('exportLogHours')
                     ->label(__('Export time logged'))
-                    ->icon('heroicon-o-document-download')
+                    ->icon('heroicon-o-document-arrow-down')
                     ->color('warning')
                     ->visible(
                         fn() => $this->record->watchers->where('id', auth()->user()->id)->count()
@@ -164,6 +185,7 @@ class ViewTicket extends ViewRecord implements HasForms
                 ->disableLabel()
                 ->placeholder(__('Type a new comment'))
                 ->required()
+                ->default('') // aman untuk form create
         ];
     }
 
@@ -184,7 +206,12 @@ class ViewTicket extends ViewRecord implements HasForms
         }
         $this->record->refresh();
         $this->cancelEditComment();
-        $this->notify('success', __('Comment saved'));
+        // $this->notify('success', __('Comment saved'));
+        // ✅ tampilkan notifikasi sukses
+        Notification::make()
+            ->title(__('Comment saved'))
+            ->success()
+            ->send();
     }
 
     public function isAdministrator(): bool
@@ -231,7 +258,11 @@ class ViewTicket extends ViewRecord implements HasForms
     {
         TicketComment::where('id', $commentId)->delete();
         $this->record->refresh();
-        $this->notify('success', __('Comment deleted'));
+        // $this->notify('success', __('Comment deleted'));
+        Notification::make()
+            ->title(__('Comment deleted'))
+            ->success()
+            ->send();
     }
 
     public function cancelEditComment(): void
