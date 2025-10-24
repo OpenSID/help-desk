@@ -35,7 +35,6 @@ class Kanban extends Page implements HasForms
     {
         // dd('hit');
         $this->project = Project::findOrFail($project);
-        dd('hit');
         if ($this->project->type === 'scrum') {
             $this->redirect("/scrum/{$project}");
             return;
