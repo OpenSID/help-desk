@@ -28,6 +28,6 @@ class CreateTicketCategory extends CreateRecord
      */
     public function getTitle(): string
     {
-        return __('Crete Solution Categories');
+        return __('Create Solution Categories');
     }
 }
