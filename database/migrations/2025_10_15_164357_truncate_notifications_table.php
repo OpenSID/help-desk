@@ -7,7 +7,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * migrasi ini dilakukan karna banyak data log yang menyimpan nama icon
+     * migrasi ini dilakukan karena banyak data log yang menyimpan nama icon
      * dan icon-icon tersebut sudah deprecated
      */
     public function up(): void
