@@ -11,3 +11,4 @@ Di rilis v2507.0.0 berisi penambahan fitur dan perbaikan lain sesuai dengan pela
 #### Perubahan Teknis
 
 #### Peningkatan Keamanan
+1. [#23](https://github.com/OpenSID/help-desk/issues/23) Update laravel 10, livewire 3, filament 3
