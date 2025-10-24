@@ -10,7 +10,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      * migrasi ini untuk mengupdate kolom `icon` di tabel `ticket_types`
-     * karna data sebelumnya iconnya sudah depricated
+     * karena data sebelumnya iconnya sudah deprecated
      */
     public function up(): void
     {
