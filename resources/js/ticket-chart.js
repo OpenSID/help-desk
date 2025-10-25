@@ -1,3 +1,5 @@
+import Chart from 'chart.js/auto';
+
 let ticketTrendChart = null;
 
 function renderTrendChart(labels, data) {

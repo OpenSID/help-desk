@@ -72,6 +72,10 @@ class StatusesRelationManager extends RelationManager
                 Tables\Columns\IconColumn::make('is_default')
                     ->label(__('Default status'))
                     ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')

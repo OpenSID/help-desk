@@ -74,6 +74,9 @@ class AppServiceProvider extends ServiceProvider
             // Scripts
             try {
                 Filament::registerScripts([
+                    // Charts handlers (listeners + renderers) - bundles Chart.js internally
+                    app(Vite::class)('resources/js/ticket-chart.js'),
+                    // Filament custom JS
                     app(Vite::class)('resources/js/filament.js'),
                 ]);
             } catch (\Exception $e) {
@@ -98,6 +101,9 @@ class AppServiceProvider extends ServiceProvider
         FilamentIcon::register([
             'heroicon-o-ban' => 'heroicon-o-x-circle', // fallback pengganti "ban"
             'lucide-ban' => 'heroicon-o-x-circle',      // kalau ada versi lucide
+            // Clipboard icon changes in heroicons v2+: map old names to new ones
+            'heroicon-o-clipboard-list' => 'heroicon-o-clipboard-document-list',
+            'heroicon-o-clipboard-check' => 'heroicon-o-clipboard-document-check',
             'default' => 'heroicon-o-circle',           // default icon aman
         ]);
     }

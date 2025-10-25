@@ -12,7 +12,7 @@
 
     @filamentStyles
     @vite(['resources/css/app.scss', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    {{-- Font Awesome moved to npm package for better performance --}}
     @livewireStyles
     @livewireScripts
 

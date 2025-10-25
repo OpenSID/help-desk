@@ -1,5 +1,7 @@
 @use 'media-queries' as *;
 
+// Font Awesome (local)
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 
 @tailwind base;
 @tailwind components;

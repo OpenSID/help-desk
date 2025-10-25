@@ -23,8 +23,18 @@
     </div>
 
     @push('scripts')
-        <script src="{{ asset('js/Sortable.js') }}"></script>
         <script>
+            // Lazy load Sortable.js only when needed
+            if (!window.Sortable) {
+                const script = document.createElement('script');
+                script.src = '{{ asset('js/Sortable.js') }}';
+                script.onload = initializeSortable;
+                document.head.appendChild(script);
+            } else {
+                initializeSortable();
+            }
+
+            function initializeSortable() {
 
             (() => {
                 let record;
@@ -48,7 +58,7 @@
                         },
                     })
                 @endforeach
-            })();
+            }
         </script>
     @endpush
 

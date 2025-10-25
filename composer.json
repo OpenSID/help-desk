@@ -5,17 +5,17 @@
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "require": {
-        "php": "^8.0.2",
+        "php": "^8.2.0",
         "ext-iconv": "*",
         "devaslanphp/filament-avatar": "^1.0",
         "doctrine/dbal": "^3.5",
         "dutchcodingcompany/filament-socialite": "^2.4",
         "filament/actions": "^3.3",
-        "filament/filament": "^3.2",
+        "filament/filament": "^3.3",
         "filament/infolists": "^3.3",
         "filament/notifications": "^3.3",
-        "filament/spatie-laravel-media-library-plugin": "^3.0",
-        "filament/spatie-laravel-settings-plugin": "^3.0",
+        "filament/spatie-laravel-media-library-plugin": "^3.3",
+        "filament/spatie-laravel-settings-plugin": "^3.3",
         "filament/tables": "^3.3",
         "guava/filament-icon-picker": "^2.3",
         "guzzlehttp/guzzle": "^7.2",
@@ -49,7 +49,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "exclude-from-classmap": [
+            "vendor/carbonphp/carbon-doctrine-types/src/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
@@ -79,12 +82,10 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan filament:upgrade"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan filament:upgrade"
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

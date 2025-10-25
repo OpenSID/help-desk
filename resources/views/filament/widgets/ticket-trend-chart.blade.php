@@ -15,7 +15,7 @@
             $chartData = $this->getChartData();
         @endphp
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {{-- Chart.js loaded globally from base-layout.blade.php --}}
         @vite('resources/js/ticket-chart.js')
 
     </x-filament::card>

@@ -1,22 +1,54 @@
 {
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400.81159a6b.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900.bdd7887e.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400.061dd5c3.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2": {
+    "file": "assets/fa-v4compatibility.c18e29ec.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
+  },
   "resources/js/filament.js": {
     "file": "assets/filament.724cd7e9.js",
     "src": "resources/js/filament.js",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app.8b46930f.js",
+    "file": "assets/app.4be36e5d.js",
     "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "_vendor.a9dde5d9.js"
+    ]
+  },
+  "resources/js/flowbite-livewire.js": {
+    "file": "assets/flowbite-livewire.9c73dab7.js",
+    "src": "resources/js/flowbite-livewire.js",
+    "isEntry": true
+  },
+  "resources/js/ticket-chart.js": {
+    "file": "assets/ticket-chart.d53f3ce1.js",
+    "src": "resources/js/ticket-chart.js",
+    "isEntry": true
+  },
+  "_vendor.a9dde5d9.js": {
+    "file": "assets/vendor.a9dde5d9.js"
+  },
+  "resources/css/app.scss": {
+    "file": "assets/app.07fd95b9.css",
+    "src": "resources/css/app.scss",
     "isEntry": true
   },
   "resources/css/filament.scss": {
-    "file": "assets/filament.0d016d93.css",
+    "file": "assets/filament.ed1b6102.css",
     "src": "resources/css/filament.scss",
-    "isEntry": true
-  },
-  "resources/css/app.scss": {
-    "file": "assets/app.5fece4a5.css",
-    "src": "resources/css/app.scss",
     "isEntry": true
   }
 }

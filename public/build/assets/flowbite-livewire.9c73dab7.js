@@ -1,0 +1,1 @@
+document.addEventListener("livewire:navigated",()=>{window.Flowbite&&"function"==typeof window.Flowbite.initPopovers&&window.Flowbite.initPopovers()}),document.addEventListener("livewire:update",()=>{window.Flowbite&&"function"==typeof window.Flowbite.initPopovers&&window.Flowbite.initPopovers()});

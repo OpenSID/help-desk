@@ -69,10 +69,23 @@
     @endif
 
     @push('scripts')
-        <link rel="stylesheet" href="{{ asset('css/jsgantt.css') }}" />
-        <script src="{{ asset('js/jsgantt.js') }}"></script>
-
         <script>
+            // Lazy load jsgantt library
+            if (!window.JSGantt) {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '{{ asset('css/jsgantt.css') }}';
+                document.head.appendChild(link);
+
+                const script = document.createElement('script');
+                script.src = '{{ asset('js/jsgantt.js') }}';
+                script.onload = initializeGantt;
+                document.head.appendChild(script);
+            } else {
+                initializeGantt();
+            }
+
+            function initializeGantt() {
             const g = new JSGantt.GanttChart(document.getElementById('gantt-chart'), 'week');
             // Set settings
             g.setOptions({
@@ -117,6 +130,7 @@
                 g.setScrollTo(new Date(scrollToDate[0], (+scrollToDate[1]) - 1, scrollToDate['2']));
                 g.Draw();
             });
+            }
         </script>
     @endpush
 
