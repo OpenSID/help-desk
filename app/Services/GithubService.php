@@ -885,4 +885,51 @@ class GithubService
             throw $e;
         }
     }
+
+    /**
+     * Menutup issue di GitHub.
+     *
+     * @param int $issueNumber
+     * @return bool
+     */
+    public function closeIssue(int $issueNumber): bool
+    {
+        try {
+            $response = $this->client->patch("repos/{$this->owner}/{$this->repo}/issues/{$issueNumber}", [
+                'json' => [
+                    'state' => 'closed',
+                ],
+            ]);
+
+            if ($response->getStatusCode() === 200) {
+                Log::info('GitHub issue closed successfully', [
+                    'issue_number' => $issueNumber,
+                ]);
+                return true;
+            }
+
+            Log::warning('Failed to close GitHub issue', [
+                'issue_number' => $issueNumber,
+                'status' => $response->getStatusCode(),
+            ]);
+            return false;
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $response = $e->getResponse();
+            if ($response && in_array($response->getStatusCode(), [429, 403])) {
+                $statusCode = $response->getStatusCode();
+                $message = $statusCode === 429 ? 'Rate limit exceeded' : 'Forbidden access';
+                Log::warning("GitHub API error while closing issue: {$message}", [
+                    'issue_number' => $issueNumber,
+                    'status_code' => $statusCode,
+                    'error' => $e->getMessage(),
+                ]);
+                throw $e; // Lempar ulang untuk ditangani oleh job
+            }
+            Log::error('Error closing GitHub issue', [
+                'issue_number' => $issueNumber,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
 }

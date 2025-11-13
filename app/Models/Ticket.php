@@ -69,6 +69,14 @@ class Ticket extends Model implements HasMedia
                 foreach ($item->watchers as $user) {
                     $user->notify(new TicketStatusUpdated($item));
                 }
+
+                // Close GitHub issue jika status berubah menjadi "Selesai" atau "Done"
+                $newStatus = TicketStatus::find($newStatusId);
+                if ($newStatus && in_array($newStatus->name, [TicketStatus::STATUS_DONE, TicketStatus::STATUS_SELESAI])) {
+                    if ($item->github_issue_number) {
+                        \App\Jobs\CloseGitHubIssue::dispatch($item->id, $item->github_issue_number);
+                    }
+                }
             }
 
             // Ticket sprint update
