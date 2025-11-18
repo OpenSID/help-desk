@@ -60,7 +60,10 @@ class GithubService
                 $description = "Label untuk $label";
                 $this->createLabel($label, $description, $color);
             }
-            $link = htmlspecialchars(route('filament.resources.tickets.view', $data['ticket_id']), ENT_QUOTES, 'UTF-8');
+
+            // Generate ticket URL menggunakan Filament Resource URL
+            $ticketUrl = \App\Filament\Resources\TicketResource::getUrl('view', ['record' => $data['ticket_id']]);
+            $link = htmlspecialchars($ticketUrl, ENT_QUOTES, 'UTF-8');
 
             $promises['createIssue'] = $this->client->postAsync("repos/{$this->owner}/{$this->repo}/issues", [
                 'json' => [
@@ -723,7 +726,10 @@ class GithubService
     {
         $issueNumber = $data['issue_number'] ?? null;
         $ticketId = $data['ticket_id'] ?? 'unknown';
-        $link = htmlspecialchars(route('filament.resources.tickets.view', $data['ticket_id']), ENT_QUOTES, 'UTF-8');
+
+        // Generate ticket URL menggunakan Filament Resource URL
+        $ticketUrl = \App\Filament\Resources\TicketResource::getUrl('view', ['record' => $data['ticket_id']]);
+        $link = htmlspecialchars($ticketUrl, ENT_QUOTES, 'UTF-8');
 
         try {
             // Perbarui label jika diperlukan
