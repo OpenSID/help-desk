@@ -56,7 +56,15 @@ class CreateTicket extends CreateRecord
     {
         parent::mount($id);
         $this->id = $id;
-        $this->telegram = app(TelegramService::class);
+
+        // Inisialisasi TelegramService
+        try {
+            $this->telegram = app(TelegramService::class);
+            Log::info('TelegramService berhasil diinisialisasi di CreateTicket');
+        } catch (\Exception $e) {
+            Log::error('Gagal menginisialisasi TelegramService: ' . $e->getMessage());
+            $this->telegram = null;
+        }
     }
     // public function __construct($id = null)
     // {
@@ -110,9 +118,22 @@ class CreateTicket extends CreateRecord
             . "{$content}\n"
             . "🔗 <a href=\"{$link}\">Lihat Tiket</a>";
 
-        // Kirim pesan ke Telegram jika service tersedia
-        if ($this->telegram) {
-            $this->telegram->sendMessage($message, $assignee);
+        // Kirim pesan ke Telegram jika service tersedia dan assignee memiliki telegram_id
+        if ($this->telegram && $assignee) {
+            try {
+                $this->telegram->sendMessage($message, $assignee);
+            } catch (\Exception $e) {
+                // Log error tapi tidak menghentikan proses
+                Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage(), [
+                    'ticket_id' => $ticket->id,
+                    'assignee' => $assignee,
+                ]);
+            }
+        } elseif (!$assignee) {
+            Log::info('Notifikasi Telegram tidak dikirim: assignee tidak memiliki telegram_id', [
+                'ticket_id' => $ticket->id,
+                'responsible_id' => $ticket->responsible_id,
+            ]);
         }
 
         // Sinkronisasi kategori tiket (many-to-many)
