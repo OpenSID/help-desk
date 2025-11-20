@@ -40,9 +40,9 @@ class CreateTicket extends CreateRecord
     /**
      * Service untuk mengirim notifikasi Telegram.
      *
-     * @var TelegramService
+     * @var TelegramService|null
      */
-    protected TelegramService $telegram;
+    protected ?TelegramService $telegram = null;
 
     /**
      * Konstruktor.
@@ -110,8 +110,10 @@ class CreateTicket extends CreateRecord
             . "{$content}\n"
             . "🔗 <a href=\"{$link}\">Lihat Tiket</a>";
 
-        // Kirim pesan ke Telegram
-        $this->telegram->sendMessage($message, $assignee);
+        // Kirim pesan ke Telegram jika service tersedia
+        if ($this->telegram) {
+            $this->telegram->sendMessage($message, $assignee);
+        }
 
         // Sinkronisasi kategori tiket (many-to-many)
         $this->record->categories()->sync($this->categories);
