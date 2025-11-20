@@ -87,65 +87,29 @@ class CreateTicket extends CreateRecord
         return $data;
     }
 
-    /**
-     * Proses setelah tiket berhasil dibuat.
-     * - Mengirim pesan notifikasi ke Telegram.
-     * - Menyimpan relasi kategori tiket (many-to-many) ke tabel pivot.
-     *
-     * @return void
-     */
-    protected function afterCreate(): void
-    {
-        $ticket = $this->record;
-        $title = htmlspecialchars($ticket->name, ENT_QUOTES, 'UTF-8');
-        $owner = htmlspecialchars(optional($ticket->owner)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
-        $assignee = optional($ticket->responsible)->telegram_id ?? null;
-        $mention = htmlspecialchars(optional($ticket->responsible)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
-        $createdAt = htmlspecialchars($ticket->created_at->format('d M Y H:i'), ENT_QUOTES, 'UTF-8');
-        $content = htmlspecialchars(Str::limit(strip_tags($ticket->content), 50, '...'), ENT_QUOTES, 'UTF-8');
-
-        // Generate ticket URL menggunakan Filament Resource getUrl
-        $ticketUrl = \App\Filament\Resources\TicketResource::getUrl('view', ['record' => $ticket->id]);
-        $link = htmlspecialchars($ticketUrl, ENT_QUOTES, 'UTF-8');
-
-        // Susun pesan notifikasi Telegram
-        $message = "🆕 <b>Tiket Baru Dibuat</b>\n"
-            . "📄 Judul: <b>{$title}</b>\n"
-            . "🙋‍♂️ Dari: {$owner}\n"
-            . "👤 Kepada: {$mention}\n"
-            . "📅 Tanggal: {$createdAt}\n"
-            . "📌 Deskripsi Singkat:\n"
-            . "{$content}\n"
-            . "🔗 <a href=\"{$link}\">Lihat Tiket</a>";
-
-        // Kirim pesan ke Telegram jika service tersedia dan assignee memiliki telegram_id
-        if ($this->telegram && $assignee) {
-            try {
-                $this->telegram->sendMessage($message, $assignee);
-            } catch (\Exception $e) {
-                // Log error tapi tidak menghentikan proses
-                Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage(), [
-                    'ticket_id' => $ticket->id,
-                    'assignee' => $assignee,
-                ]);
-            }
-        } elseif (!$assignee) {
-            Log::info('Notifikasi Telegram tidak dikirim: assignee tidak memiliki telegram_id', [
-                'ticket_id' => $ticket->id,
-                'responsible_id' => $ticket->responsible_id,
-            ]);
-        }
-
-        // Sinkronisasi kategori tiket (many-to-many)
-        $this->record->categories()->sync($this->categories);
-    }
-
     protected function handleRecordCreation(array $data): Ticket
     {
         try {
             // Buat tiket di database
             $ticket = parent::handleRecordCreation($data);
 
+            Log::info('[CreateTicket] Ticket created, starting post-creation process', [
+                'ticket_id' => $ticket->id,
+            ]);
+
+            // === BAGIAN 1: KIRIM NOTIFIKASI TELEGRAM ===
+            $this->sendTelegramNotification($ticket);
+
+            // === BAGIAN 2: SINKRONISASI KATEGORI ===
+            if (!empty($this->categories)) {
+                $ticket->categories()->sync($this->categories);
+                Log::info('[CreateTicket] Categories synced', [
+                    'ticket_id' => $ticket->id,
+                    'categories' => $this->categories,
+                ]);
+            }
+
+            // === BAGIAN 3: KIRIM KE GITHUB ===
             // Ambil instance HtmlConverter dari container
             $converter = app(HtmlConverter::class);
 
@@ -170,7 +134,6 @@ class CreateTicket extends CreateRecord
                 $ticket->project?->name => 'D3D3D3',
             ];
 
-
             $githubData = [
                 'title' => $ticket->name,
                 'body' => $markdownContent,
@@ -194,8 +157,70 @@ class CreateTicket extends CreateRecord
 
             return $ticket;
         } catch (\Exception $e) {
-            Log::error('[CreateTicket] Error creating GitHub issue: ' . $e->getMessage(), ['ticket_id' => $ticket->id ?? 'unknown']);
+            Log::error('[CreateTicket] Error in handleRecordCreation: ' . $e->getMessage(), [
+                'ticket_id' => $ticket->id ?? 'unknown',
+            ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Mengirim notifikasi Telegram ke user yang ditugaskan.
+     *
+     * @param Ticket $ticket
+     * @return void
+     */
+    protected function sendTelegramNotification(Ticket $ticket): void
+    {
+        $assignee = optional($ticket->responsible)->telegram_id ?? null;
+
+        if (!$this->telegram) {
+            Log::warning('[CreateTicket] TelegramService tidak tersedia', [
+                'ticket_id' => $ticket->id,
+            ]);
+            return;
+        }
+
+        if (!$assignee) {
+            Log::info('[CreateTicket] Notifikasi Telegram tidak dikirim: assignee tidak memiliki telegram_id', [
+                'ticket_id' => $ticket->id,
+                'responsible_id' => $ticket->responsible_id,
+            ]);
+            return;
+        }
+
+        try {
+            $title = htmlspecialchars($ticket->name, ENT_QUOTES, 'UTF-8');
+            $owner = htmlspecialchars(optional($ticket->owner)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
+            $mention = htmlspecialchars(optional($ticket->responsible)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
+            $createdAt = htmlspecialchars($ticket->created_at->format('d M Y H:i'), ENT_QUOTES, 'UTF-8');
+            $content = htmlspecialchars(Str::limit(strip_tags($ticket->content), 50, '...'), ENT_QUOTES, 'UTF-8');
+
+            // Generate ticket URL menggunakan Filament Resource getUrl
+            $ticketUrl = \App\Filament\Resources\TicketResource::getUrl('view', ['record' => $ticket->id]);
+            $link = htmlspecialchars($ticketUrl, ENT_QUOTES, 'UTF-8');
+
+            // Susun pesan notifikasi Telegram
+            $message = "🆕 <b>Tiket Baru Dibuat</b>\n"
+                . "📄 Judul: <b>{$title}</b>\n"
+                . "🙋‍♂️ Dari: {$owner}\n"
+                . "👤 Kepada: {$mention}\n"
+                . "📅 Tanggal: {$createdAt}\n"
+                . "📌 Deskripsi Singkat:\n"
+                . "{$content}\n"
+                . "🔗 <a href=\"{$link}\">Lihat Tiket</a>";
+
+            $this->telegram->sendMessage($message, $assignee);
+
+            Log::info('[CreateTicket] Notifikasi Telegram berhasil dikirim', [
+                'ticket_id' => $ticket->id,
+                'assignee' => $assignee,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('[CreateTicket] Gagal mengirim notifikasi Telegram: ' . $e->getMessage(), [
+                'ticket_id' => $ticket->id,
+                'assignee' => $assignee,
+            ]);
         }
     }
 
