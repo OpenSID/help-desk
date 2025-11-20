@@ -95,7 +95,10 @@ class CreateTicket extends CreateRecord
         $mention = htmlspecialchars(optional($ticket->responsible)->name ?? 'Tidak diketahui', ENT_QUOTES, 'UTF-8');
         $createdAt = htmlspecialchars($ticket->created_at->format('d M Y H:i'), ENT_QUOTES, 'UTF-8');
         $content = htmlspecialchars(Str::limit(strip_tags($ticket->content), 50, '...'), ENT_QUOTES, 'UTF-8');
-        $link = htmlspecialchars(route('filament.resources.tickets.view', $ticket->id), ENT_QUOTES, 'UTF-8');
+
+        // Generate ticket URL menggunakan Filament Resource getUrl
+        $ticketUrl = \App\Filament\Resources\TicketResource::getUrl('view', ['record' => $ticket->id]);
+        $link = htmlspecialchars($ticketUrl, ENT_QUOTES, 'UTF-8');
 
         // Susun pesan notifikasi Telegram
         $message = "🆕 <b>Tiket Baru Dibuat</b>\n"
