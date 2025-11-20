@@ -174,11 +174,19 @@ class CreateTicket extends CreateRecord
     {
         $assignee = optional($ticket->responsible)->telegram_id ?? null;
 
+        // Lazy initialization - inisialisasi ulang jika null
         if (!$this->telegram) {
-            Log::warning('[CreateTicket] TelegramService tidak tersedia', [
-                'ticket_id' => $ticket->id,
-            ]);
-            return;
+            try {
+                $this->telegram = app(TelegramService::class);
+                Log::info('[CreateTicket] TelegramService diinisialisasi (lazy)', [
+                    'ticket_id' => $ticket->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error('[CreateTicket] Gagal menginisialisasi TelegramService: ' . $e->getMessage(), [
+                    'ticket_id' => $ticket->id,
+                ]);
+                return;
+            }
         }
 
         if (!$assignee) {
