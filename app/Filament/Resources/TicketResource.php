@@ -25,6 +25,7 @@ use App\Models\Milestone;
 use Carbon\Carbon;
 use App\Models\IssueSource;
 use Filament\Tables\Columns\ViewColumn;
+use App\Models\ProblemCategory;
 
 class TicketResource extends Resource
 {
@@ -133,12 +134,19 @@ class TicketResource extends Resource
                                             ->columnSpan(2)
                                             ->disabled(),
 
+                                        // input kategori masalah tiket (problem category)
+                                        Forms\Components\Select::make('problem_category_id')
+                                            ->label(__('Problem Category'))
+                                            ->searchable()
+                                            ->columnSpan(3)
+                                            ->options(fn() => ProblemCategory::all()->pluck('name', 'id')->toArray()),
+
                                         // Input nama tiket
                                         Forms\Components\TextInput::make('name')
                                             ->label(__('Ticket name'))
                                             ->required()
                                             ->columnSpan(
-                                                fn($livewire) => !($livewire instanceof CreateRecord) ? 10 : 12
+                                                fn($livewire) => !($livewire instanceof CreateRecord) ? 7 : 9
                                             )
                                             ->maxLength(255),
                                     ]),

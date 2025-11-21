@@ -23,7 +23,7 @@ class Ticket extends Model implements HasMedia
         'name', 'content', 'owner_id', 'responsible_id',
         'status_id', 'project_id', 'code', 'order', 'type_id',
         'priority_id', 'estimation', 'epic_id', 'sprint_id', 'master_application_id', 'milestone_id',
-          'issue_source_id', 'github_issue_url', 'github_issue_number', 'github_project_item_id',
+          'issue_source_id', 'github_issue_url', 'github_issue_number', 'github_project_item_id', 'problem_category_id'
     ];
 
     public static function boot()
@@ -257,4 +257,9 @@ class Ticket extends Model implements HasMedia
     {
         return $this->belongsTo(issueSource::class);
     }
+
+    public function problemCategory()
+{
+    return $this->belongsTo(ProblemCategory::class, 'problem_category_id');
+}
 }

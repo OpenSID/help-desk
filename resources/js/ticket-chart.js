@@ -182,55 +182,86 @@ const colors = [
     "#84cc16", // lime
 ];
 
-function renderDuplicateChart(labels, data, urls) {
-    console.log(data.length)
+// function renderDuplicateChart(labels, data, urls) {
+//     console.log(data.length)
+//     const ctx = document.getElementById('ticketDuplicateChart').getContext('2d');
+//     const message = document.getElementById('duplicateChartMessage');
+
+//     if (ticketDuplicateChart) {
+//         ticketDuplicateChart.destroy();
+//     }
+
+//     // Kalau kosong
+//     if (!data || data.length === 0 || data.every(v => v === 0)) {
+//         console.log('no data')
+//         message.style.display = 'block';
+//         // return;
+//     } else {
+//         console.log('has data')
+//         message.style.display = 'none';
+//     }
+
+//     const backgroundColors = data.map((_, i) => colors[i % colors.length]);
+
+//     ticketDuplicateChart = new Chart(ctx, {
+//         type: 'pie',
+//         data: {
+//             labels: labels,
+//             datasets: [{
+//                 label: 'Jumlah Tiket',
+//                 data: data,
+//                 backgroundColor: backgroundColors,
+//             }]
+//         },
+//         options: {
+//             responsive: true,
+//             plugins: { legend: { display: true } },
+//             onClick: (evt, activeEls) => {
+//                 if (activeEls.length > 0) {
+//                     const index = activeEls[0].index;
+//                     window.location.href = urls[index]; // 👈 langsung ke detail
+//                 }
+//             }
+//         }
+//     });
+// }
+
+// window.addEventListener("updateDuplicateChart", event => {
+//     console.log("Chart updated:", event.detail);
+//     renderDuplicateChart(event.detail[0].labels, event.detail[0].data, event.detail[0].urls);
+// });
+
+// window.addEventListener("renderDuplicateChart", event => {
+//     renderDuplicateChart(event.detail[0].labels, event.detail[0].data, event.detail[0].urls);
+// });
+
+function renderDuplicateChart(labels, data) {
     const ctx = document.getElementById('ticketDuplicateChart').getContext('2d');
-    const message = document.getElementById('duplicateChartMessage');
 
     if (ticketDuplicateChart) {
         ticketDuplicateChart.destroy();
     }
 
-    // Kalau kosong
-    if (!data || data.length === 0 || data.every(v => v === 0)) {
-        console.log('no data')
-        message.style.display = 'block';
-        // return;
-    } else {
-        console.log('has data')
-        message.style.display = 'none';
-    }
-
-    const backgroundColors = data.map((_, i) => colors[i % colors.length]);
-
     ticketDuplicateChart = new Chart(ctx, {
-        type: 'pie',
+        type: 'bar',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Jumlah Tiket',
                 data: data,
-                backgroundColor: backgroundColors,
+                backgroundColor: '#3b82f6',
             }]
         },
         options: {
             responsive: true,
-            plugins: { legend: { display: true } },
-            onClick: (evt, activeEls) => {
-                if (activeEls.length > 0) {
-                    const index = activeEls[0].index;
-                    window.location.href = urls[index]; // 👈 langsung ke detail
-                }
-            }
+            plugins: { legend: { display: true } }
         }
     });
 }
 
 window.addEventListener("updateDuplicateChart", event => {
-    console.log("Chart updated:", event.detail);
-    renderDuplicateChart(event.detail[0].labels, event.detail[0].data, event.detail[0].urls);
+    renderDuplicateChart(event.detail[0].labels, event.detail[0].data);
 });
-
 window.addEventListener("renderDuplicateChart", event => {
-    renderDuplicateChart(event.detail[0].labels, event.detail[0].data, event.detail[0].urls);
+    renderDuplicateChart(event.detail[0].labels, event.detail[0].data);
 });
