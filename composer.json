@@ -34,7 +34,7 @@
         "stichoza/google-translate-php": "^4.1"
     },
     "require-dev": {
-        "cweagans/composer-patches": "^1.7",
+        "cweagans/composer-patches": "^2.0",
         "fakerphp/faker": "^1.9.1",
         "kkomelin/laravel-translatable-string-exporter": "^1.17",
         "laravel/framework": "^10.0",
