@@ -1,0 +1,17 @@
+{
+    "_hash": "40e3a1b7de634d3cb91c78f154f3eddf317278fd90ee1ddf8509060e3a53b24c",
+    "patches": {
+        "filament/forms": [
+            {
+                "package": "filament/forms",
+                "description": "Fix access level visibility in InteractsWithForms",
+                "url": "patches/filament-forms-access-level.patch",
+                "sha256": "d2a97221442c3f1921d6a90fff7a21352f66bf25c564c8f52057aab70706fb42",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ]
+    }
+}
