@@ -56,5 +56,5 @@ Route::name('oidc.')
         Route::get('callback', [OidcAuthController::class, 'callback'])->name('callback');
     });
 
-// Route::get('/kanban/{project}', Kanban::class)->name('filament.pages.kanban');
-// Route::get('/scrum/{project}', Scrum::class)->name('filament.pages.scrum');
+Route::get('/kanban/{project}', Kanban::class)->name('filament.pages.kanban');
+Route::get('/scrum/{project}', Scrum::class)->name('filament.pages.scrum');

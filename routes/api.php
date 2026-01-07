@@ -33,3 +33,4 @@ Route::post('/github/webhook', [App\Http\Controllers\GitHubWebhookController::cl
 // });
 
 Route::middleware('auth:sanctum')->get('/ticket/id/{id}', [\App\Http\Controllers\Api\TicketController::class, 'show']);
+Route::middleware('auth:sanctum')->get('/projects', [\App\Http\Controllers\Api\ProjectController::class, 'index']);
