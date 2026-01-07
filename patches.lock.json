@@ -6,7 +6,7 @@
                 "package": "filament/forms",
                 "description": "Fix access level visibility in InteractsWithForms",
                 "url": "patches/filament-forms-access-level.patch",
-                "sha256": "d2a97221442c3f1921d6a90fff7a21352f66bf25c564c8f52057aab70706fb42",
+                "sha256": "e62061146e005c40b36f70834dcf84eb5eb9a577f72808ff19c22cd4dee340b9",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
