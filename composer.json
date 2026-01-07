@@ -81,9 +81,9 @@
             "@php artisan db:seed"
         ],
         "post-autoload-dump": [
+            "@php patches/apply-patches.php",
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php patches/apply-patches.php"
+            "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
