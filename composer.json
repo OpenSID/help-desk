@@ -34,7 +34,6 @@
         "stichoza/google-translate-php": "^4.1"
     },
     "require-dev": {
-        "cweagans/composer-patches": "^2.0",
         "fakerphp/faker": "^1.9.1",
         "kkomelin/laravel-translatable-string-exporter": "^1.17",
         "laravel/framework": "^10.0",
@@ -85,6 +84,9 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
+        "post-install-cmd": [
+            "@php patches/apply-patches.php"
+        ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
@@ -98,11 +100,6 @@
     "extra": {
         "laravel": {
             "dont-discover": []
-        },
-        "patches": {
-            "filament/forms": {
-                "Fix access level visibility in InteractsWithForms": "patches/filament-forms-access-level.patch"
-            }
         }
     },
     "config": {
@@ -110,8 +107,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "cweagans/composer-patches": true
+            "pestphp/pest-plugin": true
         }
     },
     "minimum-stability": "dev",
