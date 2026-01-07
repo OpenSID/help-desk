@@ -4,10 +4,12 @@
  * This script fixes the Filament Forms access level issue across all platforms
  */
 
-$filePath = __DIR__ . '/vendor/filament/forms/src/Concerns/InteractsWithForms.php';
+// Use absolute path based on where this script is located
+$baseDir = dirname(dirname(__FILE__)); // Project root
+$filePath = $baseDir . '/vendor/filament/forms/src/Concerns/InteractsWithForms.php';
 
 if (!file_exists($filePath)) {
-    echo "✓ Filament forms patch not needed\n";
+    echo "⚠ Filament forms file not found at: $filePath\n";
     exit(0);
 }
 
