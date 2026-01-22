@@ -18,6 +18,13 @@ class TicketPolicy
      */
     public function viewAny(User $user)
     {
+        // 🔥 ATASAN: BISA LIHAT SEMUA TIKET
+        if (in_array($user->name, [
+            'Husnul Septia',
+        ])) {
+            return true;
+        }
+
         return $user->can('List tickets');
     }
 
@@ -30,6 +37,13 @@ class TicketPolicy
      */
     public function view(User $user, Ticket $ticket)
     {
+        // 🔥 ATASAN: BISA LIHAT SEMUA TIKET
+        if (in_array($user->name, [
+            'Husnul Septia',
+        ])) {
+            return true;
+        }
+
         return $user->can('View ticket')
             && (
                 $ticket->owner_id === $user->id

@@ -25,6 +25,11 @@ class ListTickets extends ListRecords
 
     protected function getTableQuery(): Builder
     {
+        // 🔥 ATASAN: BISA LIHAT SEMUA TIKET
+        if (in_array(auth()->user()->name, ['Husnul Septia'])) {
+            return parent::getTableQuery()->orderBy('created_at', 'desc');
+        }
+
         return parent::getTableQuery()
             ->where(function ($query) {
                 return $query->where('owner_id', auth()->user()->id)
