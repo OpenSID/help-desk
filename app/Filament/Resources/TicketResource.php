@@ -361,7 +361,6 @@ class TicketResource extends Resource
                     'record' => $record,      // opsional kalau view kamu masih butuh $record
                 ])
                 ->sortable()
-                ->searchable()
                 ->disabledClick(),
 
             // Kolom penanggung jawab
@@ -378,7 +377,6 @@ class TicketResource extends Resource
                     'record' => $record,      // opsional kalau view kamu masih butuh $record
                 ])
                 ->sortable()
-                ->searchable()
                 ->disabledClick(),
 
             // Kolom status
