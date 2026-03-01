@@ -112,7 +112,8 @@ class ProjectResource extends Resource
                                     ->searchable()
                                     ->options([
                                         'kanban' => __('Kanban'),
-                                        'scrum' => __('Scrum')
+                                        'scrum' => __('Scrum'),
+                                        'layanan' => 'Layanan',
                                     ])
                                     ->reactive()
                                     ->default(fn() => 'kanban')
