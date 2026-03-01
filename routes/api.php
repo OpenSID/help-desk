@@ -32,4 +32,12 @@ Route::post('/github/webhook', [App\Http\Controllers\GitHubWebhookController::cl
 //     ]);
 // });
 
-Route::middleware('auth:sanctum')->get('/ticket/id/{id}', [\App\Http\Controllers\Api\TicketController::class, 'show']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/ticket/id/{id}', [\App\Http\Controllers\Api\TicketController::class, 'show']);
+    
+    # master projects
+    Route::get('/projects', [\App\Http\Controllers\Api\ProjectController::class, 'index']);
+    
+    # master tiket status
+    Route::get('/ticket-statuses', [\App\Http\Controllers\Api\TicketStatusController::class, 'index']);
+});
