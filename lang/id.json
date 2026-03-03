@@ -295,5 +295,10 @@
     "Completion": "Penyelesaian",
     "Export to Excel": "Ekspor ke Excel",
     "Export Report": "Ekspor Laporan",
-    "This is an action to export data based on the data on the report page, and is equipped with problem solving for the report and then exported to Excel.": "Ini merupakan aksi untuk mengekspor data berdasarkan data yang ada di page laporan, dan dilengkapi penyelesaian masalah untuk laporan kemudian di export ke Excel."
+    "This is an action to export data based on the data on the report page, and is equipped with problem solving for the report and then exported to Excel.": "Ini merupakan aksi untuk mengekspor data berdasarkan data yang ada di page laporan, dan dilengkapi penyelesaian masalah untuk laporan kemudian di export ke Excel.",
+    "Classification": "Klasifikasi",
+    "Create Classification": "Buat Klasifikasi",
+    "Edit Classification": "Ubah Klasifikasi",
+    "Classification name": "Nama klasifikasi",
+    "Classification color": "Warna klasifikasi"
 }
