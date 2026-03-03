@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TicketResource\Pages;
-use App\Models\Epic;
 use App\Models\Project;
 use App\Models\Ticket;
 use App\Models\TicketPriority;
@@ -24,6 +23,7 @@ use App\Models\TicketCategory;
 use App\Models\Milestone;
 use Carbon\Carbon;
 use App\Models\IssueSource;
+use App\Models\TicketClassification;
 use Filament\Tables\Columns\ViewColumn;
 
 class TicketResource extends Resource
@@ -113,14 +113,13 @@ class TicketResource extends Resource
                                     )
                                     ->default(fn() => request()->get('project'))
                                     ->required(),
-                                // Pilihan epic
-                                Forms\Components\Select::make('epic_id')
-                                    ->label(__('Epic'))
+
+                                // klasifikasi tiket
+                                Forms\Components\Select::make('classification_id')
+                                    ->label(__('Classification'))
                                     ->searchable()
-                                    ->reactive()
-                                    ->options(function ($get, $set) {
-                                        return Epic::where('project_id', $get('project_id'))->pluck('name', 'id')->toArray();
-                                    }),
+                                    ->options(fn() => TicketClassification::all()->pluck('name', 'id')->toArray()),
+
                                 // Grid untuk kode dan nama tiket
                                 Forms\Components\Grid::make()
                                     ->columns(12)
@@ -347,12 +346,23 @@ class TicketResource extends Resource
                 ->sortable()
                 ->searchable(),
 
-            // Kolom owner
-            // Tables\Columns\TextColumn::make('owner.name')
-            //     ->label(__('Owner'))
-            //     ->sortable()
-            //     ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->owner]))
-            //     ->searchable(),
+            // Kolom klasifikasi
+            Tables\Columns\TextColumn::make('classification.name')
+                ->label(__('Classification'))
+                ->placeholder('-')
+                ->formatStateUsing(function ($state, $record) {
+                    return new HtmlString('
+                        <div class="flex flex-wrap gap-1">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white"
+                                  style="background-color: ' . ($record->classification->color ?? '#999') . '">
+                                ' . $state . '
+                            </span>
+                        </div>
+                    ');
+                })
+                ->searchable()
+                ->sortable(),
+
             ViewColumn::make('owner')
                 ->label(__('Owner'))
                 ->view('components.user-avatar')
@@ -363,12 +373,6 @@ class TicketResource extends Resource
                 ->sortable()
                 ->disabledClick(),
 
-            // Kolom penanggung jawab
-            // Tables\Columns\TextColumn::make('responsible.name')
-            //     ->label(__('Responsible'))
-            //     ->sortable()
-            //     ->formatStateUsing(fn($record) => view('components.user-avatar', ['user' => $record->responsible]))
-            //     ->searchable(),
             ViewColumn::make('responsible')
                 ->label(__('Responsible'))
                 ->view('components.user-avatar')
@@ -477,6 +481,7 @@ class TicketResource extends Resource
     {
         return $table
             ->columns(self::tableColumns())
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 // Filter project
                 Tables\Filters\SelectFilter::make('project_id')
@@ -547,6 +552,12 @@ class TicketResource extends Resource
                     ->label(__('Issue Source'))
                     ->multiple()
                     ->options(fn() => IssueSource::all()->pluck('name', 'id')->toArray()),
+
+                // Filter klasifikasi
+                Tables\Filters\SelectFilter::make('classification_id')
+                    ->label(__('Classification'))
+                    ->multiple()
+                    ->options(fn() => TicketClassification::all()->pluck('name', 'id')->toArray()),
             ])
             ->actions([
                 // Aksi lihat dan edit

@@ -27,7 +27,7 @@ class ListTickets extends ListRecords
     {
         // 🔥 ATASAN: BISA LIHAT SEMUA TIKET
         if (in_array(auth()->user()->name, ['Husnul Septia'])) {
-            return parent::getTableQuery()->orderBy('created_at', 'desc');
+            return parent::getTableQuery();
         }
 
         return parent::getTableQuery()
@@ -40,7 +40,6 @@ class ListTickets extends ListRecords
                                 return $query->where('users.id', auth()->user()->id);
                             });
                     });
-            })
-            ->orderBy('created_at', 'desc');
+            });
     }
 }
