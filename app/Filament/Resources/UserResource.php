@@ -12,6 +12,10 @@ use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Filament\Notifications\Notification;
+use Carbon\Carbon;
 
 class UserResource extends Resource
 {
@@ -80,7 +84,15 @@ class UserResource extends Resource
                                     ->label(__('Permission roles'))
                                     ->required()
                                     ->columns(3)
-                                    ->relationship('roles', 'name'),
+                                    ->relationship(
+                                        'roles',
+                                        'name',
+                                        function ($query) {
+                                            if (!Auth::user()->hasRole('Superadmin')) {
+                                                $query->where('name', '!=', 'Superadmin');
+                                            }
+                                        }
+                                    )
                             ]),
                     ])
             ]);
@@ -155,7 +167,40 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-            ])
+                Tables\Actions\Action::make('verifyEmail')
+                    ->label('Verifikasi Email')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) =>
+                        Auth::user()->hasRole('Superadmin')
+                    )
+                    ->disabled(fn ($record) => !is_null($record->email_verified_at))
+                    ->action(function ($record) {
+                        $record->update([
+                            'email_verified_at' => Carbon::now(),
+                        ]);
+                        Notification::make()
+                            ->title('Email berhasil diverifikasi')
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('resetPassword')
+                    ->label('Reset Password')
+                    ->icon('heroicon-o-key')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn () => Auth::user()->hasRole('Superadmin'))
+                    ->action(function ($record) {
+                        $record->update([
+                            'password' => Hash::make('12345678'),
+                        ]);
+                        Notification::make()
+                            ->title('Password berhasil direset ke 12345678')
+                            ->success()
+                            ->send();
+                    })
+                ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
